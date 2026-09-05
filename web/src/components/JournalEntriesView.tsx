@@ -1073,22 +1073,21 @@ export function JournalEntriesView({
       </>
       )}
 
-      {journalMode === "cockpit" &&
-        accountOverview && (
-          <JournalAccountOverviewPanel overview={accountOverview} currency={currency} />
-        )}
-
       {journalMode === "cockpit" && (
         <>
           {/* Sin titulo "Cockpit" ni subtitulo: repetian lo que ya dice el h1 de la
               pagina ("Journal - Dashboard") y el item activo del sidebar. Los controles
-              se quedan alineados a la derecha como el resto de acciones de cabecera. */}
+              se quedan alineados a la derecha como el resto de acciones de cabecera.
+              Va ANTES que JournalAccountOverviewPanel a peticion expresa: la tarjeta de
+              la cuenta seleccionada quedaba tapando el selector y "Personalizar panel"
+              (se dibujaba encima al aparecer), y esos dos controles tienen que verse
+              siempre, no solo cuando no hay cuenta elegida. */}
           <div className="journal-cockpit-toolbar">
             {/* selectedAccountId/onSelectedAccountIdChange son globales (ver App.tsx):
                 la misma cuenta activa que ya filtran Cuentas y Movimientos, asi que
                 elegir una aqui tambien la deja puesta al navegar a esas vistas — igual
                 que el legado, donde "Cuenta" en el dashboard del Journal es el mismo
-                selector que en Cuentas/Movimientos. Al elegir una cuenta aparece encima
+                selector que en Cuentas/Movimientos. Al elegir una cuenta aparece debajo
                 JournalAccountOverviewPanel (balance, net P&L, reglas de la cuenta), que
                 ya estaba construido y solo le faltaba este disparador. */}
             <div className="journal-cockpit-account-filter">
@@ -1099,6 +1098,7 @@ export function JournalEntriesView({
               {t("journal.cockpit.customize")}
             </button>
           </div>
+          {accountOverview && <JournalAccountOverviewPanel overview={accountOverview} currency={currency} />}
           <section className="journal-dashboard-widgets" aria-label={t("journal.cockpit.panelLabel")}>
             {dashboardLayout.order
               .filter((id) => !dashboardLayout.isHidden(id))
