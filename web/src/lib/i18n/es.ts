@@ -184,7 +184,6 @@ export const es = {
   "account.status.closed": "Cerrada",
   "account.modal.editTitle": "Editar cuenta",
   "account.modal.newTitle": "Nueva cuenta",
-  "account.modal.subtitleWrite": "Configura cuenta, estado, tamano y reglas de riesgo sin salir del listado.",
   "account.modal.subtitleReadonly": "Configura Supabase y crea una empresa para guardar.",
   "account.field.kind": "Tipo de cuenta",
   "account.kind.challenge": "Challenge",
@@ -422,7 +421,6 @@ export const es = {
 
   "journal.errorManager.title": "Tipos de error",
   "journal.errorManager.configure": "Configurar",
-  "journal.errorManager.subtitle": "Personaliza los fallos que marcas en cada trade.",
   "journal.errorManager.severity": "Gravedad",
   "journal.errorManager.severityHint": "El color sale de la gravedad.",
   "journal.errorManager.delete": "Borrar",
@@ -479,7 +477,6 @@ export const es = {
   "journal.zoom.alt": "Captura ampliada de la operacion",
 
   "journal.customize.title": "Personalizar panel",
-  "journal.customize.subtitle": "Arrastra para reordenar y usa la casilla para ocultar widgets del cockpit.",
   "journal.customize.resetOrder": "Restablecer orden",
   "journal.customize.done": "Listo",
 
@@ -591,13 +588,11 @@ export const es = {
   "journal.import.entriesImportedSuffix": "trades importados.",
   "journal.import.tradovateGenericError": "No se pudo importar el CSV de Tradovate.",
   "journal.import.dialogTitle": "Importar CSV de Tradovate",
-  "journal.import.dialogSubtitle": "Selecciona la cuenta de Trazza y sube el CSV exportado desde Performance.",
   "journal.import.csvFile": "Archivo CSV",
   "journal.import.note": "Notas, errores y capturas quedan vacios; disciplina se deja en 3 por defecto. Si Trazza reconoce la empresa y el activo, descuenta comisiones y guarda el P&L neto.",
   "journal.import.back": "Volver",
   "journal.import.analyze": "Analizar CSV",
   "journal.import.previewTitle": "Vista previa de importacion",
-  "journal.import.previewSubtitle": "Revisa las operaciones detectadas antes de crearlas en el journal.",
   "journal.import.detected": "CSV",
   "journal.import.operations": "operaciones detectadas",
   "journal.import.rowsGroupedInto": "filas agrupadas en",
@@ -605,7 +600,6 @@ export const es = {
   "journal.import.createEntriesSuffix": "trades",
 
   "journal.entryMode.title": "Como quieres crear el trade?",
-  "journal.entryMode.subtitle": "Elige si quieres rellenarlo a mano o traer datos desde un CSV compatible.",
   "journal.entryMode.help": "Manual: rellenas todos los campos a mano. CSV: Trazza intenta rellenar fecha, activo, direccion, P&L y cuenta automaticamente. Notas, errores y captura quedan vacios; disciplina se deja en 3 por defecto.",
   "journal.entryMode.manual": "Manual",
   "journal.entryMode.manualHint": "Rellenar formulario a mano.",
@@ -652,7 +646,6 @@ export const es = {
   "capitalCurve.withdrawalIncome": "Retiro / ingreso",
   "capitalCurve.expense": "Gasto",
   "plans.title": "Elige tu plan",
-  "plans.subtitle": "Acceso completo a Trazza. Cancela cuando quieras.",
   "plans.monthly.name": "Mensual",
   "plans.annual.name": "Anual",
   "plans.perMonth": "/mes",

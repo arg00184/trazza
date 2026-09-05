@@ -1120,7 +1120,6 @@ export function JournalEntriesView({
           setErrorManagerOpen(false);
           setErrorTypeMessage(null);
         }}
-        subtitle={t("journal.errorManager.subtitle")}
         title={t("journal.errorManager.title")}
         width="wide"
       >
@@ -1307,11 +1306,7 @@ export function JournalEntriesView({
       )}
 
       {entryModeOpen && (
-        <Modal
-          onClose={() => setEntryModeOpen(false)}
-          subtitle={t("journal.entryMode.subtitle")}
-          title={t("journal.entryMode.title")}
-        >
+        <Modal onClose={() => setEntryModeOpen(false)} title={t("journal.entryMode.title")}>
           <div className="journal-entry-mode-help">
             <InfoHint text={t("journal.entryMode.help")} />
           </div>
@@ -1344,7 +1339,7 @@ export function JournalEntriesView({
       )}
 
       {importOpen && !importPreview && (
-        <Modal onClose={closeImportFlow} subtitle={t("journal.import.dialogSubtitle")} title={t("journal.import.dialogTitle")}>
+        <Modal onClose={closeImportFlow} title={t("journal.import.dialogTitle")}>
           <form
             className="entity-form resource-form-grid modal-form-grid journal-entry-form"
             onSubmit={(event) => {
@@ -1405,7 +1400,7 @@ export function JournalEntriesView({
       )}
 
       {importPreview && (
-        <Modal onClose={closeImportFlow} subtitle={t("journal.import.previewSubtitle")} title={t("journal.import.previewTitle")} width="wide">
+        <Modal onClose={closeImportFlow} title={t("journal.import.previewTitle")} width="wide">
           <div className="journal-detail-grid">
             <div>
               <dt>{t("journal.entryForm.account")}</dt>
@@ -1826,11 +1821,7 @@ export function JournalEntriesView({
         )}
 
       {customizeOpen && (
-        <Modal
-          onClose={() => setCustomizeOpen(false)}
-          title={t("journal.customize.title")}
-          subtitle={t("journal.customize.subtitle")}
-        >
+        <Modal onClose={() => setCustomizeOpen(false)} title={t("journal.customize.title")}>
           <div className="journal-widget-customize-list">
             {dashboardLayout.order.map((id) => {
               const isHidden = dashboardLayout.isHidden(id);

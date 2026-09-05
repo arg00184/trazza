@@ -186,7 +186,6 @@ export const en: Record<TranslationKey, string> = {
   "account.status.closed": "Closed",
   "account.modal.editTitle": "Edit account",
   "account.modal.newTitle": "New account",
-  "account.modal.subtitleWrite": "Set up account, status, size and risk rules without leaving the list.",
   "account.modal.subtitleReadonly": "Set up Supabase and create a firm to save.",
   "account.field.kind": "Account type",
   "account.kind.challenge": "Challenge",
@@ -424,7 +423,6 @@ export const en: Record<TranslationKey, string> = {
 
   "journal.errorManager.title": "Error types",
   "journal.errorManager.configure": "Configure",
-  "journal.errorManager.subtitle": "Customize the mistakes you mark on each trade.",
   "journal.errorManager.severity": "Severity",
   "journal.errorManager.severityHint": "The colour follows from the severity.",
   "journal.errorManager.delete": "Delete",
@@ -481,7 +479,6 @@ export const en: Record<TranslationKey, string> = {
   "journal.zoom.alt": "Zoomed trade capture",
 
   "journal.customize.title": "Customize panel",
-  "journal.customize.subtitle": "Drag to reorder and use the checkbox to hide cockpit widgets.",
   "journal.customize.resetOrder": "Reset order",
   "journal.customize.done": "Done",
 
@@ -593,13 +590,11 @@ export const en: Record<TranslationKey, string> = {
   "journal.import.entriesImportedSuffix": "trades imported.",
   "journal.import.tradovateGenericError": "Could not import the Tradovate CSV.",
   "journal.import.dialogTitle": "Import Tradovate CSV",
-  "journal.import.dialogSubtitle": "Pick the Trazza account and upload the CSV exported from Performance.",
   "journal.import.csvFile": "CSV file",
   "journal.import.note": "Notes, mistakes and captures are left empty; discipline defaults to 3. If Trazza recognizes the firm and the symbol, it deducts commissions and saves the net P&L.",
   "journal.import.back": "Back",
   "journal.import.analyze": "Analyze CSV",
   "journal.import.previewTitle": "Import preview",
-  "journal.import.previewSubtitle": "Review the detected trades before creating them in the journal.",
   "journal.import.detected": "CSV",
   "journal.import.operations": "trades detected",
   "journal.import.rowsGroupedInto": "rows grouped into",
@@ -607,7 +602,6 @@ export const en: Record<TranslationKey, string> = {
   "journal.import.createEntriesSuffix": "trades",
 
   "journal.entryMode.title": "How do you want to create the trade?",
-  "journal.entryMode.subtitle": "Choose whether to fill it in by hand or bring data from a compatible CSV.",
   "journal.entryMode.help": "Manual: you fill in every field by hand. CSV: Trazza tries to fill date, symbol, direction, P&L and account automatically. Notes, mistakes and capture are left empty; discipline defaults to 3.",
   "journal.entryMode.manual": "Manual",
   "journal.entryMode.manualHint": "Fill in the form by hand.",
@@ -654,7 +648,6 @@ export const en: Record<TranslationKey, string> = {
   "capitalCurve.withdrawalIncome": "Withdrawal / income",
   "capitalCurve.expense": "Expense",
   "plans.title": "Choose your plan",
-  "plans.subtitle": "Full access to Trazza. Cancel anytime.",
   "plans.monthly.name": "Monthly",
   "plans.annual.name": "Annual",
   "plans.perMonth": "/month",

@@ -21,7 +21,7 @@ export function PlansModal({ busy, error, onClose, onSelect }: PlansModalProps) 
   const features = [t("plans.feature.unlimited"), t("plans.feature.journal"), t("plans.feature.cancel")];
 
   return (
-    <Modal onClose={onClose} subtitle={t("plans.subtitle")} title={t("plans.title")} width="wide">
+    <Modal onClose={onClose} title={t("plans.title")} width="wide">
       <div className="plans-grid">
         <article className="plan-card">
           <span className="plan-name">{t("plans.monthly.name")}</span>

@@ -326,7 +326,7 @@ export function AccountsView({
       <Modal
         onClose={closeForm}
         title={editingId ? t("account.modal.editTitle") : t("account.modal.newTitle")}
-        subtitle={canWrite ? t("account.modal.subtitleWrite") : t("account.modal.subtitleReadonly")}
+        subtitle={canWrite ? undefined : t("account.modal.subtitleReadonly")}
         width="wide"
       >
         <form
