@@ -4810,9 +4810,28 @@ button {
   font-weight: var(--weight-black);
 }
 
+/* El importe del dia es el dato principal de la celda y pasa a mostrarse en el color
+   de su resultado, como el resto de cifras con signo de la app (total del mes,
+   chart-delta, Finanzas). Eso es lo que le da el protagonismo; el fondo suave de la
+   celda (.journal-day.positive/.negative) se queda como refuerzo, no como unica senal.
+   El tamano NO sube de --text-sm: se probo --text-md y --text-lg y a los anchos
+   reales de la rejilla (span 8 de 12, ~66px de celda util en un portatil) recortaban
+   con elipsis los importes de cinco cifras, que es justo lo que este archivo prohibe
+   ("un importe truncado es peor que no mostrarlo"). El color ya carga la senal. */
 .journal-day strong {
   font-size: var(--text-sm);
   text-align: right;
+}
+
+/* :not(.payout) deja los dias de retiro con su azul propio (regla mas arriba). Sin par
+   de tema oscuro a proposito: --positive/--negative ya cambian con el tema y el color
+   va directo sobre <strong>, no heredado, asi que gana el empate en ambos temas. */
+.journal-day.positive:not(.payout) strong {
+  color: var(--positive);
+}
+
+.journal-day.negative:not(.payout) strong {
+  color: var(--negative);
 }
 
 .journal-day small {
