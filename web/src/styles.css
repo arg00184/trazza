@@ -858,13 +858,45 @@ button {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ============= MODO PRIVACIDAD =============
+   El ojo de la barra superior (data-privacy="hidden") desenfoca TODA cifra sensible de
+   la vista: importes, porcentajes de resultado y saldos. Antes se hacia con
+   `color: transparent` + resplandor, pero el resplandor dejaba intuir los digitos; ahora
+   es un blur de verdad, ilegible.
+
+   Reglas para no romper nada:
+   - Se aplica cifra a cifra, sobre elementos hoja (strong / b / span / td / dd), NUNCA
+     sobre un panel o tarjeta entera: `filter` crea contexto de apilado y bloque
+     contenedor igual que `transform` (ver la nota de MOTION mas abajo), y sobre un
+     contenedor grande descoloca modales y desplegables.
+   - El blur va en `em`, no en `px`: asi escala con el tamano de letra y una cifra titular
+     y una etiqueta de eje quedan igual de ilegibles.
+   - Se oculta el numero, no el contexto: etiquetas, ejes de fecha, leyendas y la forma de
+     las graficas (linea de capital, barras) se mantienen visibles a proposito.
+   - Selectores genericos de grafica (.chart-value-badge, .chart-hover-card…) los comparten
+     el Panel y el Journal: cubrir los dos de una vez es intencionado.
+
+   Cobertura por vista — se ira ampliando pantalla a pantalla. */
+
+/* Comun / varias vistas */
 .app-shell[data-privacy="hidden"] .metric-card strong,
-.app-shell[data-privacy="hidden"] .chart-delta,
 .app-shell[data-privacy="hidden"] .amount,
+.app-shell[data-privacy="hidden"] .chart-delta,
+.app-shell[data-privacy="hidden"] .chart-value-axis span,
+.app-shell[data-privacy="hidden"] .chart-value-badge,
+.app-shell[data-privacy="hidden"] .chart-hover-card strong,
+.app-shell[data-privacy="hidden"] .chart-hover-card small,
 .app-shell[data-privacy="hidden"] .journal-score strong,
-.app-shell[data-privacy="hidden"] .journal-detail-grid dd {
-  color: transparent !important;
-  text-shadow: 0 0 9px color-mix(in srgb, var(--text) 72%, transparent);
+.app-shell[data-privacy="hidden"] .journal-detail-grid dd,
+/* Panel (vista "overview") */
+.app-shell[data-privacy="hidden"] .period-summary-list strong,
+.app-shell[data-privacy="hidden"] .period-month-tooltip strong,
+.app-shell[data-privacy="hidden"] .period-month-tooltip b,
+.app-shell[data-privacy="hidden"] .insight-row b {
+  filter: blur(0.34em);
+  /* seleccionar el texto por detras del blur lo dejaria copiar en claro */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .state-notice {
