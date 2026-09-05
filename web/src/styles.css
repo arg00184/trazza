@@ -865,18 +865,20 @@ button {
    es un blur de verdad, ilegible.
 
    Reglas para no romper nada:
-   - Se aplica cifra a cifra, sobre elementos hoja (strong / b / span / td / dd), NUNCA
-     sobre un panel o tarjeta entera: `filter` crea contexto de apilado y bloque
+   - Se aplica cifra a cifra, sobre elementos hoja (strong / b / span / td / dd / small),
+     NUNCA sobre un panel o tarjeta entera: `filter` crea contexto de apilado y bloque
      contenedor igual que `transform` (ver la nota de MOTION mas abajo), y sobre un
      contenedor grande descoloca modales y desplegables.
    - El blur va en `em`, no en `px`: asi escala con el tamano de letra y una cifra titular
      y una etiqueta de eje quedan igual de ilegibles.
+   - `color: var(--muted)` ademas del blur: sin esto el verde/rojo del signo sobrevivia al
+     desenfoque y se seguia intuyendo si era ganancia o perdida.
    - Se oculta el numero, no el contexto: etiquetas, ejes de fecha, leyendas y la forma de
-     las graficas (linea de capital, barras) se mantienen visibles a proposito.
+     las graficas (curvas, barras, medidores) se mantienen visibles a proposito.
+   - Los modales quedan fuera: cuelgan de <body>, no de .app-shell, y ademas ahi el
+     usuario esta editando y necesita ver lo que teclea.
    - Selectores genericos de grafica (.chart-value-badge, .chart-hover-card…) los comparten
-     el Panel y el Journal: cubrir los dos de una vez es intencionado.
-
-   Cobertura por vista — se ira ampliando pantalla a pantalla. */
+     el Panel y el Journal: cubrir los dos de una vez es intencionado. */
 
 /* Comun / varias vistas */
 .app-shell[data-privacy="hidden"] .metric-card strong,
@@ -888,12 +890,44 @@ button {
 .app-shell[data-privacy="hidden"] .chart-hover-card small,
 .app-shell[data-privacy="hidden"] .journal-score strong,
 .app-shell[data-privacy="hidden"] .journal-detail-grid dd,
+.app-shell[data-privacy="hidden"] .journal-detail-hero strong,
+.app-shell[data-privacy="hidden"] .journal-same-day strong,
 /* Panel (vista "overview") */
 .app-shell[data-privacy="hidden"] .period-summary-list strong,
 .app-shell[data-privacy="hidden"] .period-month-tooltip strong,
 .app-shell[data-privacy="hidden"] .period-month-tooltip b,
-.app-shell[data-privacy="hidden"] .insight-row b {
+.app-shell[data-privacy="hidden"] .insight-row b,
+/* Cuentas */
+.app-shell[data-privacy="hidden"] .account-card-head strong,
+.app-shell[data-privacy="hidden"] .account-card-rules strong,
+.app-shell[data-privacy="hidden"] .account-track-floor,
+.app-shell[data-privacy="hidden"] .account-track-ceiling,
+.app-shell[data-privacy="hidden"] .account-archive-size,
+.app-shell[data-privacy="hidden"] .account-archive-result,
+/* Movimientos */
+.app-shell[data-privacy="hidden"] .movement-category-copy small,
+/* Journal — cockpit y galeria (los modales quedan fuera, ver arriba) */
+.app-shell[data-privacy="hidden"] .journal-day strong,
+.app-shell[data-privacy="hidden"] .journal-day small,
+.app-shell[data-privacy="hidden"] .journal-week-summary strong,
+.app-shell[data-privacy="hidden"] .journal-total-value,
+.app-shell[data-privacy="hidden"] .journal-gauge-value,
+.app-shell[data-privacy="hidden"] .journal-gauge-counts span,
+.app-shell[data-privacy="hidden"] .journal-split-value,
+.app-shell[data-privacy="hidden"] .journal-split-figures strong,
+.app-shell[data-privacy="hidden"] .journal-split-figures small,
+.app-shell[data-privacy="hidden"] .journal-account-return strong,
+.app-shell[data-privacy="hidden"] .journal-account-overview-stats strong,
+.app-shell[data-privacy="hidden"] .journal-account-rule-head strong,
+.app-shell[data-privacy="hidden"] .journal-account-rule small,
+.app-shell[data-privacy="hidden"] .journal-breakdown-row .breakdown-main strong,
+.app-shell[data-privacy="hidden"] .journal-breakdown-row .breakdown-meta small,
+.app-shell[data-privacy="hidden"] .weekday-track strong,
+.app-shell[data-privacy="hidden"] .journal-recent-row strong,
+.app-shell[data-privacy="hidden"] .journal-card-footer > span {
   filter: blur(0.34em);
+  /* el verde/rojo del signo sobrevive al blur; se neutraliza a gris */
+  color: var(--muted) !important;
   /* seleccionar el texto por detras del blur lo dejaria copiar en claro */
   user-select: none;
   -webkit-user-select: none;
