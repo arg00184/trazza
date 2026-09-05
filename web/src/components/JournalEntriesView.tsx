@@ -1098,7 +1098,16 @@ export function JournalEntriesView({
               {t("journal.cockpit.customize")}
             </button>
           </div>
-          {accountOverview && <JournalAccountOverviewPanel overview={accountOverview} currency={currency} />}
+          {accountOverview && (
+            <>
+              <JournalAccountOverviewPanel overview={accountOverview} currency={currency} />
+              {/* Separador muy discreto entre la tarjeta de la cuenta y el resto del
+                  cockpit debajo, a peticion expresa. Va como elemento propio del flujo,
+                  no como border-top/padding de la seccion siguiente, para no duplicar
+                  el hueco de --space-2xl que .firms-workspace ya pone a los dos lados. */}
+              <div aria-hidden="true" className="journal-account-divider" />
+            </>
+          )}
           <section className="journal-dashboard-widgets" aria-label={t("journal.cockpit.panelLabel")}>
             {dashboardLayout.order
               .filter((id) => !dashboardLayout.isHidden(id))

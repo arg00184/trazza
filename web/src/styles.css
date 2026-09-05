@@ -3693,6 +3693,16 @@ button {
   background: #ffffff;
 }
 
+/* 1px, sin margen propio: vive en el gap de --space-2xl que .firms-workspace ya pone
+   entre la tarjeta de la cuenta y la seccion de widgets, asi que solo anade ~1px al
+   hueco existente en vez de sumarle otro nivel de espaciado encima. */
+.journal-account-divider {
+  height: 1px;
+  border: none;
+  margin: 0;
+  background: var(--line);
+}
+
 .journal-account-overview-panel {
   display: grid;
   gap: var(--space-lg);
