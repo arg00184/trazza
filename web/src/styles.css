@@ -2398,6 +2398,16 @@ button {
   margin-top: var(--space-2xs);
 }
 
+/* .primary-action (44px, --space-xl de padding) se ve mas grande que el .ghost-action de
+   "Cancelar" justo al lado (38px, --space-base) — a peticion expresa, el mismo
+   desequilibrio que ya se corrigio una vez en la barra superior (.topbar-primary, mas
+   arriba). Aqui no hace falta pelear un empate de especificidad como alli: dos clases
+   (0,2,0) le ganan a una (0,1,0) sin importar el orden en el archivo. */
+.form-action-row .primary-action {
+  min-height: 38px;
+  padding: 0 var(--space-base);
+}
+
 .modal-layer {
   position: fixed;
   inset: 0;
