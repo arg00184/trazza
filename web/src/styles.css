@@ -2387,16 +2387,15 @@ button {
   padding-top: var(--space-xl);
 }
 
-/* Con linea de separacion arriba, como el legado: en un modal compacto los botones
-   quedaban pegados al ultimo campo y costaba ver donde acaba el formulario. */
+/* Sin linea de separacion arriba (se quito a peticion expresa, en todos los modales:
+   se veia de mas). El hueco que ya deja el gap del formulario y el padding del propio
+   modal-body es suficiente para distinguir donde acaba el ultimo campo. */
 .form-action-row {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: var(--space-sm);
   margin-top: var(--space-2xs);
-  border-top: 1px solid var(--line);
-  padding-top: var(--space-base);
 }
 
 .modal-layer {
