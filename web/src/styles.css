@@ -906,10 +906,8 @@ button {
 .app-shell[data-privacy="hidden"] .account-archive-result,
 /* Movimientos */
 .app-shell[data-privacy="hidden"] .movement-category-copy small,
-/* Journal — cockpit y galeria (los modales quedan fuera, ver arriba) */
-.app-shell[data-privacy="hidden"] .journal-day strong,
-.app-shell[data-privacy="hidden"] .journal-day small,
-.app-shell[data-privacy="hidden"] .journal-week-summary strong,
+/* Journal — cockpit y galeria (los modales quedan fuera, ver arriba). El calendario NO
+   entra aqui: se censura con puntitos, en su propio bloque mas abajo. */
 .app-shell[data-privacy="hidden"] .journal-total-value,
 .app-shell[data-privacy="hidden"] .journal-gauge-value,
 .app-shell[data-privacy="hidden"] .journal-gauge-counts span,
@@ -931,6 +929,57 @@ button {
   /* seleccionar el texto por detras del blur lo dejaria copiar en claro */
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* --- Calendario del Journal: censura de puntitos, no blur (como el legado) ---
+   El legado tapa el importe del dia con "••••••" via sensitiveSignedMoney y deja el
+   color del resultado intacto (pnlToneClass sigue en la celda). Aqui igual: el numero
+   real se queda en el DOM —lo necesita el aria-label de la celda— con font-size:0, y
+   ::after pinta los puntos heredando el color de tono del propio <strong>. El conteo de
+   operaciones se oculta, tambien como en el legado. Afecta al importe del dia, al total
+   de la semana y al total del mes. */
+.app-shell[data-privacy="hidden"] .journal-day.has-entries > strong,
+.app-shell[data-privacy="hidden"] .journal-week-summary > strong,
+.app-shell[data-privacy="hidden"] .journal-calendar-panel .chart-delta {
+  font-size: 0;
+  /* .chart-delta del calendario venia del bloque generico con blur; se anula */
+  filter: none;
+  user-select: none;
+}
+
+.app-shell[data-privacy="hidden"] .journal-day.has-entries > strong::after,
+.app-shell[data-privacy="hidden"] .journal-week-summary > strong::after,
+.app-shell[data-privacy="hidden"] .journal-calendar-panel .chart-delta::after {
+  content: "••••••";
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+}
+
+.app-shell[data-privacy="hidden"] .journal-week-summary > strong::after {
+  font-size: var(--text-md);
+}
+
+.app-shell[data-privacy="hidden"] .journal-calendar-panel .chart-delta::after {
+  font-size: var(--text-xl);
+}
+
+/* El total del mes conserva el tono: el bloque generico le forzaba gris con !important,
+   asi que hay que volver a fijar el color de resultado con la misma arma y mas
+   especificidad. Los importes de dia y semana no lo necesitan: ya no pasan por el
+   generico, asi que su regla de tono normal (.journal-day.positive strong, etc.) sigue
+   valiendo y ::after la hereda. */
+.app-shell[data-privacy="hidden"] .journal-calendar-panel .chart-delta.positive {
+  color: var(--positive) !important;
+}
+
+.app-shell[data-privacy="hidden"] .journal-calendar-panel .chart-delta.negative {
+  color: var(--negative) !important;
+}
+
+/* El conteo de operaciones del dia se oculta (deja su hueco), como en el legado */
+.app-shell[data-privacy="hidden"] .journal-day small {
+  visibility: hidden;
 }
 
 .state-notice {
