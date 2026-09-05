@@ -493,6 +493,7 @@ export const es = {
   "journal.calendar.payoutPrefix": "Payout",
   "journal.calendar.entriesAriaSuffix": "trades",
   "journal.calendar.payoutsAriaSuffix": "payouts por",
+  "journal.calendar.shareImage": "Guardar imagen del calendario",
 
   "journal.detail.rMultiple": "R",
   "journal.detail.direction": "Direccion",

@@ -4604,6 +4604,24 @@ button {
   font-size: var(--text-xl);
 }
 
+/* El total del mes y el boton de "guardar imagen" comparten la esquina superior derecha
+   del panel, en una fila, centrados entre si. Mismo planteamiento que .chart-heading-side
+   en Disciplina y P&L acumulado (delta + accion pequena). */
+.calendar-heading-side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Redondo y por debajo del escalon de 34px de la navegacion de mes: es una accion
+   secundaria y discreta, pegada a una cifra, no un control de barra de herramientas. */
+.journal-calendar-snapshot.icon-control {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+
 /* Ocho columnas y no siete: la ultima es el resumen semanal del legado. Va algo mas
    ancha que un dia porque lleva importe con divisa, que no cabe en el ancho de una
    celda de dia (ahi los importes van compactados justo por eso). */

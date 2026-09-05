@@ -495,6 +495,7 @@ export const en: Record<TranslationKey, string> = {
   "journal.calendar.payoutPrefix": "Payout",
   "journal.calendar.entriesAriaSuffix": "trades",
   "journal.calendar.payoutsAriaSuffix": "payouts for",
+  "journal.calendar.shareImage": "Save calendar image",
 
   "journal.detail.rMultiple": "R",
   "journal.detail.direction": "Direction",

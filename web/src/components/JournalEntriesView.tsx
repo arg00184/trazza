@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BarChart3,
   Brain,
+  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -37,6 +38,7 @@ import { MetricCard } from "./MetricCard";
 import { Modal } from "./Modal";
 import { Select } from "./Select";
 import { buildAreaPath, buildSmoothPath } from "../lib/chartPath";
+import { shareJournalCalendarImage } from "../lib/journalCalendarImage";
 import { colorForSeverity } from "../lib/journalErrors";
 import { useChartZoomHover } from "../hooks/useChartZoomHover";
 import { useJournalDashboardLayout, type JournalWidgetId } from "../hooks/useJournalDashboardLayout";
@@ -310,6 +312,7 @@ export function JournalEntriesView({
   const canWrite = dataMode === "cloud";
   const dashboardLayout = useJournalDashboardLayout();
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [savingCalendarImage, setSavingCalendarImage] = useState(false);
   const t = useT();
   const { language } = useI18n();
   const directionOptions = useMemo(() => getDirectionOptions(t), [t]);
@@ -730,6 +733,31 @@ export function JournalEntriesView({
     if (saved && editingErrorTypeId === type.id) resetErrorTypeForm();
   };
 
+  /* Icono de camara en la esquina del panel del calendario: genera un PNG del mes
+     (web/src/lib/journalCalendarImage.ts) y lo comparte o descarga. */
+  const handleShareCalendarImage = async () => {
+    if (savingCalendarImage) return;
+    setSavingCalendarImage(true);
+    try {
+      await shareJournalCalendarImage(
+        {
+          currency,
+          monthKey: visibleMonth,
+          monthLabel: visibleMonthLabel,
+          monthTotal,
+          todayDate,
+          weekdayLabels,
+          weeks: calendarWeeks,
+        },
+        t,
+      );
+    } catch (error) {
+      console.error("No se pudo generar la imagen del calendario", error);
+    } finally {
+      setSavingCalendarImage(false);
+    }
+  };
+
   /* El mismo detalle lo usan el panel del cockpit (seleccion del calendario) y el modal
      que abre la galeria de entradas. Se define como funcion en lugar de componente para
      no tener que pasarle como props las quince cosas de las que depende. */
@@ -833,11 +861,25 @@ export function JournalEntriesView({
           {/* Mismo bloque etiqueta-arriba/cifra-abajo que "VARIACION" en Evolucion de
               capital (CapitalCurve, chart-delta-block/chart-delta). --text-2xl, el
               tamaño que usa el resto de la app para el numero mas importante de la
-              vista (journal-detail-hero > strong, topbar h1). */}
-          <span className="chart-delta-block">
-            <small>{t("journal.calendar.monthTotal")}</small>
-            <strong className={`chart-delta ${signedTone(monthTotal)}`}>{formatMoney(monthTotal, currency)}</strong>
-          </span>
+              vista (journal-detail-hero > strong, topbar h1). La camara comparte fila
+              con el total, en la esquina superior derecha del panel (mismo patron que
+              .chart-heading-side en Disciplina y P&L acumulado). */}
+          <div className="calendar-heading-side">
+            <span className="chart-delta-block">
+              <small>{t("journal.calendar.monthTotal")}</small>
+              <strong className={`chart-delta ${signedTone(monthTotal)}`}>{formatMoney(monthTotal, currency)}</strong>
+            </span>
+            <button
+              aria-label={t("journal.calendar.shareImage")}
+              className="icon-control journal-calendar-snapshot"
+              disabled={savingCalendarImage}
+              onClick={handleShareCalendarImage}
+              title={t("journal.calendar.shareImage")}
+              type="button"
+            >
+              <Camera size={13} strokeWidth={2.2} />
+            </button>
+          </div>
         </div>
         <div className="journal-calendar-grid">
           {weekdayLabels.map((day) => (
