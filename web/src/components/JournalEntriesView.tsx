@@ -2678,11 +2678,11 @@ function JournalAccountOverviewPanel({ currency, overview }: { currency: Currenc
     <section className="panel journal-account-overview-panel">
       <div className="journal-account-overview-head">
         <div>
-          <span>{t("journal.accountOverview.selectedAccount")}</span>
+          {/* Sin la etiqueta "CUENTA SELECCIONADA" ni la linea de empresa/base debajo del
+              nombre (a peticion expresa, con captura senalando las dos): el selector de
+              arriba ya dice que cuenta esta activa, asi que aqui sobraban. El espacio que
+              dejan libre es el que ahora usa el nombre, mas grande. */}
           <h2>{overview.accountName}</h2>
-          <p>
-            {overview.firmName || t("account.card.noFirm")} - {overview.baseLabel}
-          </p>
         </div>
         <div className="journal-account-return">
           <span>{t("journal.accountOverview.return")}</span>

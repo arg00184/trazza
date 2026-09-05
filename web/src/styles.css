@@ -3708,7 +3708,6 @@ button {
   gap: var(--space-lg);
 }
 
-.journal-account-overview-head span,
 .journal-account-return span,
 .journal-account-overview-stats span {
   color: var(--muted);
@@ -3717,18 +3716,14 @@ button {
   text-transform: uppercase;
 }
 
+/* Sin margin-top: ya no hay una etiqueta ni una linea de empresa/base encima o debajo
+   que separar, el nombre es el unico contenido de esta columna. Un escalon mas grande
+   que antes (--text-lg a --text-2xl) porque quitar esas dos lineas dejo el hueco libre. */
 .journal-account-overview-head h2 {
-  margin: var(--space-sm) 0 0;
+  margin: 0;
   color: var(--text);
-  font-size: var(--text-lg);
+  font-size: var(--text-2xl);
   line-height: var(--leading-tight);
-}
-
-.journal-account-overview-head p {
-  margin: var(--space-sm) 0 0;
-  color: var(--strong-muted);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
 }
 
 .journal-account-return {

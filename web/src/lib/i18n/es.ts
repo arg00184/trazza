@@ -541,7 +541,6 @@ export const es = {
 
   "journal.errors.noneMarked": "Sin errores marcados.",
 
-  "journal.accountOverview.selectedAccount": "Cuenta seleccionada",
   "journal.accountOverview.return": "Retorno",
   "journal.accountOverview.balance": "Balance",
   "journal.accountOverview.netPnl": "P&L neto",

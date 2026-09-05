@@ -543,7 +543,6 @@ export const en: Record<TranslationKey, string> = {
 
   "journal.errors.noneMarked": "No errors marked.",
 
-  "journal.accountOverview.selectedAccount": "Selected account",
   "journal.accountOverview.return": "Return",
   "journal.accountOverview.balance": "Balance",
   "journal.accountOverview.netPnl": "Net P&L",
