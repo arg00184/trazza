@@ -5884,15 +5884,15 @@ button {
   font-weight: var(--weight-medium);
 }
 
-/* auto-fit y no tres columnas fijas: con tres fijas un importe de cinco cifras se
-   cortaba por 2px en cuanto la tarjeta bajaba de ancho, y el corte dependia de que la
-   cifra saliera justa. Asi las cajas se pliegan a dos filas antes que recortar. */
-/* Minimo de 140px y no de 92: con cuatro cajas en una columna de tarjeta caben tres por
-   fila a 107px cada una, y ahi un balance de cinco cifras ya no entra. A 140 caen dos
-   por fila, que da 167px por caja y deja sitio de sobra al importe mas largo. */
+/* Siempre son cuatro cajas y la disposicion buscada es 2x2. Con auto-fit el numero de
+   columnas dependia del ancho exacto de la tarjeta, y .account-card-grid
+   (auto-fill, minmax(320px,1fr)) la deja a veces en 331px: 283px por dentro, 5px por
+   debajo de los 288 que pedian dos columnas de 140. Resultado: al plegar/desplegar el
+   menu la tarjeta cruzaba ese umbral y las cajas pasaban a una sola columna. Fijas a
+   dos se acaba la dependencia; el @media (max-width: 820px) ya las baja a una. */
 .account-card-rules {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
 }
 
