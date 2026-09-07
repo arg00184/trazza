@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { entryParams } from "../lib/entryParams";
 import { supabaseClient } from "../lib/supabase";
 
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled" | "lifetime";
@@ -67,6 +68,25 @@ export function useSubscription(user: User | null) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  /**
+   * Vuelta desde Stripe. La fila de `subscriptions` no la escribe el checkout, la escribe
+   * el webhook, y Stripe devuelve al navegador sin esperar a que ese webhook haya
+   * llegado: la primera lectura de arriba puede encontrarse todavia el estado anterior y
+   * dejar al recien pagado viendo el paywall. Se reintenta un par de veces, espaciado,
+   * en vez de una sola vez con un margen grande — asi el caso normal (el webhook llega en
+   * menos de un segundo) se resuelve rapido y el lento tampoco se queda colgado.
+   *
+   * Solo con user: sin sesion no hay nada que refrescar, y ademas entryParams se lee una
+   * unica vez al cargar el modulo, asi que esto no se puede disparar dos veces por una
+   * navegacion posterior.
+   */
+  useEffect(() => {
+    if (entryParams.checkout !== "success" || !user) return;
+
+    const timers = [1200, 4000].map((delay) => setTimeout(() => void refresh(), delay));
+    return () => timers.forEach(clearTimeout);
+  }, [refresh, user]);
 
   const accessActive = useMemo(() => isSubscriptionAccessActive(subscription), [subscription]);
 

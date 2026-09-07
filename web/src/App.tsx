@@ -14,6 +14,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useSubscription } from "./hooks/useSubscription";
 import { useTheme } from "./hooks/useTheme";
 import { useTrazzaData } from "./hooks/useTrazzaData";
+import { entryParams } from "./lib/entryParams";
 import { useI18n, useT } from "./lib/i18n/context";
 import { isSupabaseConfigured } from "./lib/supabase";
 import { filterJournalByAccount, filterMovementsByAccount } from "./lib/metrics";
@@ -145,6 +146,7 @@ export default function App() {
     return (
       <AuthScreen
         busy={auth.busy}
+        initialMode={entryParams.authMode ?? "signin"}
         message={auth.message}
         theme={themeState.theme}
         onForgotPassword={auth.resetPassword}

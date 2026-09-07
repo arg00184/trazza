@@ -5,6 +5,10 @@ import { Wordmark } from "./Wordmark";
 
 type AuthScreenProps = {
   busy: boolean;
+  /* Con que pestaña abre. Por defecto "signin", que es lo que quiere quien ya tiene
+     cuenta; la landing manda "signup" desde sus botones de alta para que el visitante
+     no tenga que buscar el enlace de registro despues de haber pulsado "Crear cuenta". */
+  initialMode?: "signin" | "signup";
   message?: {
     type: "info" | "success" | "error";
     text: string;
@@ -16,8 +20,17 @@ type AuthScreenProps = {
   onThemeToggle: () => void;
 };
 
-export function AuthScreen({ busy, message, onForgotPassword, onSignIn, onSignUp, onThemeToggle, theme }: AuthScreenProps) {
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+export function AuthScreen({
+  busy,
+  initialMode = "signin",
+  message,
+  onForgotPassword,
+  onSignIn,
+  onSignUp,
+  onThemeToggle,
+  theme,
+}: AuthScreenProps) {
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode);
   const [fullName, setFullName] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [email, setEmail] = useState("");
