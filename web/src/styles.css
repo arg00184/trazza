@@ -388,7 +388,6 @@
 :root[data-theme="dark"] .entity-form textarea,
 :root[data-theme="dark"] .entity-form .custom-select-trigger,
 :root[data-theme="dark"] .journal-breakdown-empty,
-:root[data-theme="dark"] .journal-breakdown-row,
 :root[data-theme="dark"] .journal-account-overview-stats div,
 :root[data-theme="dark"] .journal-account-rule,
 :root[data-theme="dark"] .journal-day,
@@ -3832,11 +3831,6 @@ button {
   white-space: nowrap;
 }
 
-.journal-breakdown-row:hover {
-  border-color: rgba(124, 58, 237, 0.28);
-  background: #ffffff;
-}
-
 /* 1px, sin margen propio: vive en el gap de --space-2xl que .firms-workspace ya pone
    entre la tarjeta de la cuenta y la seccion de widgets, asi que solo anade ~1px al
    hueco existente en vez de sumarle otro nivel de espaciado encima. */
@@ -4257,6 +4251,8 @@ button {
   gap: var(--space-md);
 }
 
+/* Mismo fondo que el panel que las contiene: la caja se define por el hueco entre
+   filas, no por un tono propio. El borde ya es transparente en toda la app. */
 .journal-breakdown-row {
   display: grid;
   gap: var(--space-sm);
@@ -4264,10 +4260,7 @@ button {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: var(--space-base);
-  transition:
-    border-color var(--dur-fast) var(--ease),
-    background var(--dur-fast) var(--ease);
-  background: #fbfcfd;
+  background: var(--surface);
 }
 
 .breakdown-main,
