@@ -1034,7 +1034,6 @@ export function JournalEntriesView({
           id: row.id,
           label: row.label,
           meter: winRateMeter(row.winRate),
-          tone: row.winRate === null ? "neutral" : row.winRate >= 0.5 ? "positive" : "negative",
           value: formatRatioPercent(row.winRate),
         }))}
         subtitle={t("journal.breakdown.session.subtitle")}
@@ -2458,7 +2457,6 @@ type BreakdownDisplayRow = {
   id: string;
   label: string;
   meter: number;
-  tone: Tone;
   value: string;
 };
 
@@ -2484,7 +2482,7 @@ function JournalBreakdownPanel({
       {rows.length ? (
         <div className="journal-breakdown-list">
           {rows.map((row) => (
-            <div className={`journal-breakdown-row ${row.tone}`} key={row.id}>
+            <div className="journal-breakdown-row" key={row.id}>
               <div className="breakdown-main">
                 <span>{row.label}</span>
                 <strong>{row.value}</strong>
