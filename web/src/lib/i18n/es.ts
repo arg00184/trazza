@@ -529,7 +529,6 @@ export const es = {
   "journal.breakdown.errors.title": "Errores de ejecucion",
   "journal.breakdown.errors.subtitle": "Frecuencia de fallos marcados en los trades.",
   "journal.breakdown.errors.empty": "Sin errores registrados.",
-  "journal.breakdown.entriesSuffix": "trades",
   "journal.breakdown.entrySuffix": "trade",
   "journal.breakdown.avgPrefix": "Avg",
   "journal.breakdown.markedShareSuffix": "del total marcado",

@@ -918,7 +918,6 @@ button {
 .app-shell[data-privacy="hidden"] .journal-account-rule-head strong,
 .app-shell[data-privacy="hidden"] .journal-account-rule small,
 .app-shell[data-privacy="hidden"] .journal-breakdown-row .breakdown-main strong,
-.app-shell[data-privacy="hidden"] .journal-breakdown-row .breakdown-meta small,
 .app-shell[data-privacy="hidden"] .weekday-track strong,
 .app-shell[data-privacy="hidden"] .journal-recent-row strong,
 .app-shell[data-privacy="hidden"] .journal-card-footer > span {
@@ -4263,8 +4262,7 @@ button {
   background: var(--surface);
 }
 
-.breakdown-main,
-.breakdown-meta {
+.breakdown-main {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -4273,9 +4271,7 @@ button {
 }
 
 .breakdown-main span,
-.breakdown-main strong,
-.breakdown-meta span,
-.breakdown-meta small {
+.breakdown-main strong {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4299,28 +4295,13 @@ button {
   background: var(--surface-muted);
 }
 
+/* Todas moradas: el porcentaje ya dice el signo por su color, la barra solo mide. */
 .breakdown-meter i {
   display: block;
   width: 0;
   height: 100%;
   border-radius: inherit;
   background: var(--accent);
-}
-
-.journal-breakdown-row.positive .breakdown-meter i {
-  background: var(--positive);
-}
-
-.journal-breakdown-row.negative .breakdown-meter i {
-  background: var(--negative);
-}
-
-.breakdown-meta span,
-.breakdown-meta small,
-.journal-breakdown-empty {
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
 }
 
 .journal-breakdown-empty {
@@ -4330,6 +4311,9 @@ button {
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
   background: #fbfcfd;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   text-align: center;
 }
 

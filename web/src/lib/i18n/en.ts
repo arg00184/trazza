@@ -531,7 +531,6 @@ export const en: Record<TranslationKey, string> = {
   "journal.breakdown.errors.title": "Execution errors",
   "journal.breakdown.errors.subtitle": "Frequency of mistakes marked on trades.",
   "journal.breakdown.errors.empty": "No errors recorded.",
-  "journal.breakdown.entriesSuffix": "trades",
   "journal.breakdown.entrySuffix": "trade",
   "journal.breakdown.avgPrefix": "Avg",
   "journal.breakdown.markedShareSuffix": "of the total marked",

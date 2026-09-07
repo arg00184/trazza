@@ -1032,10 +1032,8 @@ export function JournalEntriesView({
         emptyText={t("journal.breakdown.session.empty")}
         rows={analytics.sessionRows.map((row) => ({
           id: row.id,
-          detail: `${row.wins}W / ${row.losses}L / ${row.breakEven} BE`,
           label: row.label,
           meter: winRateMeter(row.winRate),
-          note: `${row.count} ${t("journal.breakdown.entriesSuffix")} - ${formatMoney(row.pnl, currency)}`,
           tone: row.winRate === null ? "neutral" : row.winRate >= 0.5 ? "positive" : "negative",
           value: formatRatioPercent(row.winRate),
         }))}
@@ -2457,12 +2455,9 @@ function formatJournalRecentDate(value: string, language: Language) {
 }
 
 type BreakdownDisplayRow = {
-  color?: string;
-  detail: string;
   id: string;
   label: string;
   meter: number;
-  note: string;
   tone: Tone;
   value: string;
 };
@@ -2495,11 +2490,7 @@ function JournalBreakdownPanel({
                 <strong>{row.value}</strong>
               </div>
               <div className="breakdown-meter" aria-hidden="true">
-                <i style={{ backgroundColor: row.color, width: `${row.meter}%` }} />
-              </div>
-              <div className="breakdown-meta">
-                <span>{row.detail}</span>
-                <small>{row.note}</small>
+                <i style={{ width: `${row.meter}%` }} />
               </div>
             </div>
           ))}
