@@ -211,30 +211,19 @@ de la pantalla. No es un ajuste de espaciado: `.journal-day span/strong/small` y
 no mostrarlo" más abajo. Pide una disposición distinta para móvil (lista en vez de
 rejilla, o scroll horizontal deliberado en vez de recorte accidental).
 
-**Desplegar el cambio de dominio.** El corte a React está hecho y verificado en local
-(build, rutas, los dos temas, móvil), pero a 7 de septiembre de 2026 **no se ha
-desplegado ni se ha comprobado contra producción**.
+**Solo queda comprobar un cobro real.** El corte a React se desplegó el 7 de septiembre
+de 2026 y está verificado contra producción: rutas (`/`, `/app`, `/legal.html`,
+`/robots.txt`, `/sitemap.xml`), la redirección `/app.html` → `/app` conservando la query,
+el dominio sin www redirigiendo al www, la URL y la clave de Supabase incrustadas de
+verdad en el bundle (o sea, no salió en modo demo) y los `.sql` ya devolviendo 404. Las
+dos Edge Functions de Stripe se redesplegaron después, con las URLs de retorno apuntando
+ya a `/app`, y responden correctamente.
 
-⚠️ **Antes del primer despliegue hay que dar de alta `VITE_SUPABASE_URL` y
-`VITE_SUPABASE_ANON_KEY` en las variables de entorno del proyecto de Vercel.** Es el
-único paso que no viaja en el repo y el que más caro sale olvidar. Hasta ahora Vercel
-nunca necesitó variables porque servía ficheros estáticos y el legado llevaba la URL y la
-clave **escritas a mano dentro de `app.js`** (líneas 12-13). React las lee de
-`import.meta.env` y Vite las incrusta **en tiempo de build**: si Vercel construye sin
-ellas, `isSupabaseConfigured` sale `false`, la app despliega en modo demo y **nadie puede
-entrar** — y no falla el build, así que no hay ningún aviso. Los valores están en
-`web/.env.local`, que no viaja con git. (Que la clave anónima estuviera escrita en el
-código no era un fallo de seguridad: es pública por diseño y acaba en el navegador de
-todos modos.)
-
-Al desplegar hay dos cosas más que mirar sí o sí: que `/app.html` redirige de verdad (es
-lo que sostiene los marcadores de los 40 usuarios) y que el primer checkout real vuelve
-bien. Y una que hay que hacer aparte,
-porque no viaja en el despliegue de Vercel: **redesplegar las dos Edge Functions de
-Stripe**, `create-checkout-session` y `create-portal-session`, cuyas URLs de retorno ya
-apuntan a `/app` en el código. Mientras no se redesplieguen siguen devolviendo a
-`/app.html`, que funciona por la redirección — así que no es urgente, pero sí queda a
-medias.
+Lo único que no se ha podido probar sin gastar dinero es **un checkout de verdad de punta
+a punta**: que Stripe devuelve a `/app?checkout=success` y que el paywall se levanta solo.
+La lógica está puesta (`entryParams.ts` lee el parámetro y `useSubscription` reintenta la
+lectura a los 1,2 y 4 segundos, porque la fila la escribe el webhook y Stripe no lo
+espera), pero conviene mirarlo la próxima vez que alguien pague.
 
 Los cabos de CSS que hubo aquí sí están todos cerrados a 26 de agosto de 2026: las tres
 reglas `.workspace` duplicadas se consolidaron en una (con cuidado: el `min-width: 0`
