@@ -1865,6 +1865,7 @@ button {
   overflow: hidden;
   color: var(--text);
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1889,6 +1890,16 @@ button {
 }
 
 .insight-panel.is-negative .insight-row i {
+  background: linear-gradient(90deg, var(--negative), color-mix(in srgb, var(--negative) 42%, transparent));
+}
+
+/* Resultado por empresa: todas las barras nacen de la izquierda; el color lleva el
+   signo (verde suma, rojo resta) porque la direccion ya no lo distingue. */
+.insight-row i.is-pos {
+  background: linear-gradient(90deg, var(--positive), color-mix(in srgb, var(--positive) 42%, transparent));
+}
+
+.insight-row i.is-neg {
   background: linear-gradient(90deg, var(--negative), color-mix(in srgb, var(--negative) 42%, transparent));
 }
 

@@ -96,9 +96,9 @@ export function DashboardView({ accounts, currency, firms, journalEntries, movem
     const income = monthlyRows.reduce((total, row) => total + row.income, 0);
     return { expenses, income, net: income - expenses };
   }, [monthlyRows]);
-  const accountRows = useMemo(
-    () => buildAccountRows(filteredAccounts, dashboardModel.scopedMovements, firms, t),
-    [dashboardModel.scopedMovements, filteredAccounts, firms, t],
+  const firmRows = useMemo(
+    () => buildFirmRows(dashboardModel.scopedMovements, firms, t),
+    [dashboardModel.scopedMovements, firms, t],
   );
   const firmFilterOptions = useMemo(
     () => [{ label: t("common.all"), value: "all" }, ...firms.map((firm) => ({ label: firm.name, value: firm.id }))],
@@ -286,9 +286,9 @@ export function DashboardView({ accounts, currency, firms, journalEntries, movem
         />
         <InsightPanel
           currency={currency}
-          emptyText={t("dashboard.insights.noMovementsByAccount")}
-          rows={accountRows.map((row) => ({ detail: row.firmName, label: row.accountName, value: row.net }))}
-          title={t("dashboard.insights.resultByAccount")}
+          emptyText={t("dashboard.insights.noMovementsByFirm")}
+          rows={firmRows.map((row) => ({ label: row.firmName, value: row.net }))}
+          title={t("dashboard.insights.resultByFirm")}
         />
         <MovementsTable accounts={filteredAccounts} currency={currency} movements={dashboardModel.scopedMovements} />
       </section>
@@ -350,19 +350,22 @@ function buildExpenseRows(movements: Movement[], t: ReturnType<typeof useT>) {
     .sort((left, right) => right.amount - left.amount);
 }
 
-function buildAccountRows(accounts: TradingAccount[], movements: Movement[], firms: Firm[], t: ReturnType<typeof useT>) {
+function buildFirmRows(movements: Movement[], firms: Firm[], t: ReturnType<typeof useT>) {
   const firmNameById = new Map(firms.map((firm) => [firm.id, firm.name]));
-  return accounts
-    .map((account) => {
-      const accountMovements = movements.filter((movement) => movement.accountId === account.id);
-      const income = accountMovements.filter((movement) => movement.kind === "income").reduce((total, movement) => total + movement.amount, 0);
-      const expenses = accountMovements.filter((movement) => movement.kind === "expense").reduce((total, movement) => total + movement.amount, 0);
-      return {
-        accountName: account.name,
-        firmName: firmNameById.get(account.firmId) || t("account.card.noFirm"),
-        net: income - expenses,
-      };
-    })
+
+  const grouped = new Map<string, { expenses: number; income: number }>();
+  movements.forEach((movement) => {
+    const current = grouped.get(movement.firmId) || { expenses: 0, income: 0 };
+    if (movement.kind === "income") current.income += movement.amount;
+    else current.expenses += movement.amount;
+    grouped.set(movement.firmId, current);
+  });
+
+  return [...grouped.entries()]
+    .map(([firmId, totals]) => ({
+      firmName: firmNameById.get(firmId) || t("account.card.noFirm"),
+      net: totals.income - totals.expenses,
+    }))
     .filter((row) => row.net !== 0)
     .sort((left, right) => right.net - left.net);
 }
@@ -492,11 +495,15 @@ function InsightPanel({
 }: {
   currency: Currency;
   emptyText: string;
-  rows: Array<{ detail?: string; label: string; value: number }>;
+  rows: Array<{ label: string; value: number }>;
   tone?: "auto" | "negative";
   title: string;
 }) {
   const maxValue = Math.max(1, ...rows.map((row) => Math.abs(row.value)));
+  /* En el panel firmado (Resultado por empresa) la barra nace de la izquierda como
+     las demas, pero se tine por el signo: verde si suma, rojo si resta. El panel de
+     gastos ya es todo del mismo signo y lo pinta la clase .is-negative. */
+  const signed = tone !== "negative";
   return (
     <section className={`panel insight-panel ${tone === "negative" ? "is-negative" : ""}`}>
       <div className="panel-heading">
@@ -513,8 +520,10 @@ function InsightPanel({
                   <strong>{row.label}</strong>
                   <b className={tone === "negative" ? "negative" : signedTone(row.value)}>{formatMoney(row.value, currency)}</b>
                 </span>
-                {row.detail && <small>{row.detail}</small>}
-                <i style={{ width: `${Math.max(5, (Math.abs(row.value) / maxValue) * 100)}%` }} />
+                <i
+                  className={signed ? (row.value < 0 ? "is-neg" : "is-pos") : undefined}
+                  style={{ width: `${Math.max(5, (Math.abs(row.value) / maxValue) * 100)}%` }}
+                />
               </div>
             </div>
           ))
