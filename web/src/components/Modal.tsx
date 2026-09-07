@@ -12,7 +12,7 @@ type ModalProps = {
   onClose: () => void;
   subtitle?: string;
   title: string;
-  width?: "default" | "wide";
+  width?: "narrow" | "default" | "wide";
 };
 
 export function Modal({ children, hideTitle = false, onClose, subtitle, title, width = "default" }: ModalProps) {
@@ -39,7 +39,7 @@ export function Modal({ children, hideTitle = false, onClose, subtitle, title, w
     <div className="modal-layer" role="presentation">
       <button className="modal-backdrop" aria-label={t("common.closeModal")} onClick={onClose} type="button" />
       <section
-        className={`modal-card ${width === "wide" ? "is-wide" : ""}`}
+        className={`modal-card ${width === "wide" ? "is-wide" : ""} ${width === "narrow" ? "is-narrow" : ""}`}
         aria-modal="true"
         role="dialog"
         aria-label={hideTitle ? title : undefined}

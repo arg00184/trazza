@@ -3,6 +3,7 @@ import { BadgeCheck, Building2, Check, Pencil, Plus, Trash2, WalletCards } from 
 import { Combobox } from "./Combobox";
 import { Modal } from "./Modal";
 import { Select } from "./Select";
+import { useConfirm } from "./confirm";
 import { getFirmLogo, getKnownFirmNames } from "../lib/firmLogos";
 import { useT } from "../lib/i18n/context";
 import { matchesSearch } from "../lib/search";
@@ -55,6 +56,7 @@ export function FirmsView({
   const [formOpen, setFormOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<"all" | FirmType>("all");
   const t = useT();
+  const confirm = useConfirm();
   const knownFirmNames = useMemo(() => getKnownFirmNames(), []);
   const firmTypeOptions = useMemo(() => getFirmTypeOptions(t), [t]);
   const firmTypeFilters = useMemo(() => [{ label: t("common.all"), value: "all" as const }, ...firmTypeOptions], [firmTypeOptions, t]);
@@ -347,8 +349,8 @@ export function FirmsView({
                   aria-label={`${t("common.delete")} ${firm.name}`}
                   className="card-delete"
                   disabled={deleteDisabled}
-                  onClick={() => {
-                    if (!window.confirm(`${t("common.deleteConfirmPrefix")} ${firm.name}?`)) return;
+                  onClick={async () => {
+                    if (!(await confirm({ title: `${t("common.deleteConfirmPrefix")} ${firm.name}?`, confirmLabel: t("common.delete"), tone: "danger" }))) return;
                     void onDeleteFirm(firm.id);
                   }}
                   title={firmStats.total > 0 ? t("firm.card.deleteTitleBlocked") : t("firm.card.deleteTitleAllowed")}

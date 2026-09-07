@@ -37,6 +37,7 @@ import { InfoHint } from "./InfoHint";
 import { MetricCard } from "./MetricCard";
 import { Modal } from "./Modal";
 import { Select } from "./Select";
+import { useConfirm } from "./confirm";
 import { buildAreaPath, buildSmoothPath } from "../lib/chartPath";
 import { shareJournalCalendarImage } from "../lib/journalCalendarImage";
 import { colorForSeverity } from "../lib/journalErrors";
@@ -314,6 +315,7 @@ export function JournalEntriesView({
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [savingCalendarImage, setSavingCalendarImage] = useState(false);
   const t = useT();
+  const confirm = useConfirm();
   const { language } = useI18n();
   const directionOptions = useMemo(() => getDirectionOptions(t), [t]);
   const sessionOptions = useMemo(() => getSessionOptions(t), [t]);
@@ -1330,7 +1332,7 @@ export function JournalEntriesView({
                     <button
                       className="card-delete"
                       disabled={!canWrite || mutating}
-                      onClick={() => {
+                      onClick={async () => {
                         if (usage > 0) {
                           setErrorTypeMessage({
                             text: `${t("journal.errorManager.inUsePrefix")} ${usage} ${usage === 1 ? t("journal.errorManager.inUseEntry") : t("journal.errorManager.inUseEntries")}. ${t("journal.errorManager.archiveInstead")}`,
@@ -1339,7 +1341,7 @@ export function JournalEntriesView({
                           return;
                         }
                         setErrorTypeMessage(null);
-                        if (!window.confirm(t("journal.errorManager.deleteConfirm"))) return;
+                        if (!(await confirm({ title: t("journal.errorManager.deleteConfirm"), confirmLabel: t("common.delete"), tone: "danger" }))) return;
                         void onDeleteErrorType(type.id, defaultErrorTypeIds.has(type.id));
                       }}
                       title={t("journal.errorManager.delete")}
@@ -1811,8 +1813,8 @@ export function JournalEntriesView({
               className="card-delete"
               aria-label={t("common.delete")}
               disabled={!canWrite || mutating}
-              onClick={() => {
-                if (!window.confirm(t("journal.list.deleteConfirm"))) return;
+              onClick={async () => {
+                if (!(await confirm({ title: t("journal.list.deleteConfirm"), confirmLabel: t("common.delete"), tone: "danger" }))) return;
                 void onDeleteEntry(detailEntry.id).then((deleted) => {
                   if (deleted) setDetailEntryId(undefined);
                 });

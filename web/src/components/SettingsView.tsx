@@ -12,6 +12,7 @@ import { useI18n, useT } from "../lib/i18n/context";
 import { exportJournalEntriesCsv } from "../lib/journalCsv";
 import { Select } from "./Select";
 import { SubscriptionPanel } from "./SubscriptionPanel";
+import { useConfirm } from "./confirm";
 import type { useSubscription } from "../hooks/useSubscription";
 import type { AppData, Currency, DataMode, UserProfile, UserProfileInput } from "../types";
 
@@ -62,6 +63,7 @@ export function SettingsView({
   const [migrationMessage, setMigrationMessage] = useState<{ text: string; type: "error" | "info" | "success" } | null>(null);
   const [localMigrationSource, setLocalMigrationSource] = useState<LocalMigrationSource | null>(null);
   const t = useT();
+  const confirm = useConfirm();
   const { language, setLanguage } = useI18n();
 
   useEffect(() => {
@@ -88,7 +90,11 @@ export function SettingsView({
     const summary = summarizeImportData(nextData);
     if (
       currentHasData &&
-      !window.confirm(`La migracion sustituira los datos actuales de Supabase por: ${summary}. Antes se descargara una copia JSON de seguridad.`)
+      !(await confirm({
+        title: t("settings.migration.title"),
+        description: `La migracion sustituira los datos actuales de Supabase por: ${summary}. Antes se descargara una copia JSON de seguridad.`,
+        confirmLabel: t("settings.migration.importJson"),
+      }))
     ) {
       return;
     }
@@ -282,8 +288,16 @@ export function SettingsView({
         <button
           className="danger-action"
           disabled={busy}
-          onClick={() => {
-            if (!window.confirm(t("settings.danger.confirm"))) return;
+          onClick={async () => {
+            if (
+              !(await confirm({
+                title: t("settings.danger.title"),
+                description: t("settings.danger.confirm"),
+                confirmLabel: t("settings.danger.button"),
+                tone: "danger",
+              }))
+            )
+              return;
             void onDeleteAccount();
           }}
           type="button"

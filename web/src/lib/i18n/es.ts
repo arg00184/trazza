@@ -8,6 +8,7 @@ export const es = {
   "app.notice.errorTextSuffix": "Mientras tanto se muestran datos demo para mantener la interfaz navegable.",
 
   "common.cancel": "Cancelar",
+  "common.confirm": "Confirmar",
   "common.saving": "Guardando...",
   "common.saveChanges": "Guardar cambios",
   "common.edit": "Editar",

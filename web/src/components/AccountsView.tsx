@@ -4,6 +4,7 @@ import { DatePicker } from "./DatePicker";
 import { FilterToggleButton } from "./FilterToggle";
 import { Modal } from "./Modal";
 import { Select } from "./Select";
+import { useConfirm } from "./confirm";
 import {
   formatAccountSize,
   formatAmount,
@@ -121,6 +122,7 @@ export function AccountsView({
   const [screen, setScreen] = useState<"list" | "form">("list");
   const [statusFilter, setStatusFilter] = useState<"all" | AccountStatus>("all");
   const t = useT();
+  const confirm = useConfirm();
   const accountStatusOptions = useMemo(() => getAccountStatusOptions(t), [t]);
   const accountStatusFilters = useMemo(() => [{ label: t("common.all"), value: "all" as const }, ...accountStatusOptions], [accountStatusOptions, t]);
   const accountStatusLabelByValue = useMemo(() => new Map(accountStatusOptions.map((option) => [option.value, option.label])), [accountStatusOptions]);
@@ -752,8 +754,8 @@ export function AccountsView({
                   aria-label={`${t("common.delete")} ${account.name}`}
                   className="card-delete"
                   disabled={deleteDisabled}
-                  onClick={() => {
-                    if (!window.confirm(`${t("common.deleteConfirmPrefix")} ${account.name}?`)) return;
+                  onClick={async () => {
+                    if (!(await confirm({ title: `${t("common.deleteConfirmPrefix")} ${account.name}?`, confirmLabel: t("common.delete"), tone: "danger" }))) return;
                     void onDeleteAccount(account.id);
                   }}
                   title={deleteDisabled ? t("account.card.deleteTitleBlocked") : t("account.card.deleteTitleAllowed")}
@@ -848,8 +850,8 @@ export function AccountsView({
                       aria-label={`${t("common.delete")} ${account.name}`}
                       className="card-delete"
                       disabled={deleteDisabled}
-                      onClick={() => {
-                        if (!window.confirm(`${t("common.deleteConfirmPrefix")} ${account.name}?`)) return;
+                      onClick={async () => {
+                        if (!(await confirm({ title: `${t("common.deleteConfirmPrefix")} ${account.name}?`, confirmLabel: t("common.delete"), tone: "danger" }))) return;
                         void onDeleteAccount(account.id);
                       }}
                       title={deleteDisabled ? t("account.card.deleteTitleBlocked") : t("account.card.deleteTitleAllowed")}

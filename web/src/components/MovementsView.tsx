@@ -4,6 +4,7 @@ import { DatePicker } from "./DatePicker";
 import { FilterToggleButton } from "./FilterToggle";
 import { Modal } from "./Modal";
 import { Select } from "./Select";
+import { useConfirm } from "./confirm";
 import { calculatePayoutNetAmount, formatMoney, getAccountName, getPayoutGrossAmount, getSelectableAccounts } from "../lib/metrics";
 import { useT } from "../lib/i18n/context";
 import { matchesSearch } from "../lib/search";
@@ -97,6 +98,7 @@ export function MovementsView({
   const [screen, setScreen] = useState<"list" | "form">("list");
   const [toFilter, setToFilter] = useState("");
   const t = useT();
+  const confirm = useConfirm();
   const categoryLabels = useMemo(() => getMovementCategoryLabels(t), [t]);
   const canWrite = dataMode === "cloud";
   const categories = draft.kind === "income" ? incomeCategories : expenseCategories;
@@ -551,8 +553,8 @@ export function MovementsView({
                         aria-label={`${t("common.delete")} ${movement.date}`}
                         className="card-delete"
                         disabled={!canWrite || mutating}
-                        onClick={() => {
-                          if (!window.confirm(t("movement.deleteConfirm"))) return;
+                        onClick={async () => {
+                          if (!(await confirm({ title: t("movement.deleteConfirm"), confirmLabel: t("common.delete"), tone: "danger" }))) return;
                           void onDeleteMovement(movement.id);
                         }}
                         title={t("common.delete")}

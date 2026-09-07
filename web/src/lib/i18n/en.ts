@@ -10,6 +10,7 @@ export const en: Record<TranslationKey, string> = {
   "app.notice.errorTextSuffix": "Meanwhile demo data is shown to keep the interface navigable.",
 
   "common.cancel": "Cancel",
+  "common.confirm": "Confirm",
   "common.saving": "Saving...",
   "common.saveChanges": "Save changes",
   "common.edit": "Edit",
