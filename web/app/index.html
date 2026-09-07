@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Trazza es un workspace de trading para journal, cuentas fondeadas y finanzas."
+    />
+    <!-- La app vive detras del login: indexarla no aporta nada y ademas competiria en
+         Google con la landing, que es la pagina que si queremos que se encuentre. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/trazza.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Baloo+2:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Trazza</title>
+    <script>
+      /* El tema se aplica antes de pintar nada. useTheme lo hace tambien, pero dentro de un
+         efecto de React: para entonces el navegador ya ha pintado un fotograma en claro, y
+         quien tiene guardado el oscuro ve un fogonazo blanco en cada carga. Misma clave que
+         useTheme ("trazza:theme") y mismo defecto (claro) a proposito — si divergen, el
+         fogonazo vuelve pero al reves. */
+      (() => {
+        try {
+          const stored = localStorage.getItem("trazza:theme");
+          const theme = stored === "dark" || stored === "light" ? stored : "light";
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+        } catch {
+          /* Navegador con el almacenamiento bloqueado: se queda en el tema claro por defecto. */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

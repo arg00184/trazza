@@ -18,7 +18,7 @@
     {
       "name": "trazza-legacy-mac",
       "runtimeExecutable": "zsh",
-      "runtimeArgs": ["-lc", "node /Users/rjsalex/Desktop/trazza/.claude/serve-legacy.mjs"],
+      "runtimeArgs": ["-lc", "node $HOME/Desktop/trazza/.claude/serve-legacy.mjs"],
       "port": 5178,
       "url": "http://localhost:5178"
     },

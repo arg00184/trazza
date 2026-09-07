@@ -1,6 +1,10 @@
-// Servidor estatico minimo para previsualizar la app legada (app.html + app.js + styles.css),
-// que no tiene build ni dev server propio. Solo para desarrollo local: sirve la raiz del repo
-// en http://localhost:5178 y nada mas.
+// Servidor estatico minimo para consultar la app legada (legacy/app.html + app.js + styles.css
+// + i18n.js) y la landing que tuvo hasta septiembre de 2026 (legacy/index.html). No tiene build
+// ni dev server propio. Solo para desarrollo local: sirve legacy/ en http://localhost:5178.
+//
+// El legado ya NO se despliega: produccion sirve web/dist (landing en "/" y app React en
+// "/app"). Esto existe para poder mirar como hacia algo la version anterior, no para trabajar
+// en ella.
 //
 // La raiz se resuelve desde la ruta de este fichero y no desde process.cwd() a proposito: el
 // lanzador de .claude/launch.json arranca el proceso sin un cwd utilizable en el Mac.
@@ -9,7 +13,12 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = normalize(join(fileURLToPath(new URL(".", import.meta.url)), ".."));
+const REPO = normalize(join(fileURLToPath(new URL(".", import.meta.url)), ".."));
+const ROOT = join(REPO, "legacy");
+// La pagina legal se movio con la app nueva (web/public/legal.html) porque es la que se sirve
+// hoy, pero el legado la enlaza desde su pie. Se busca ahi como segunda opcion para que esos
+// enlaces no den 404 al revisar el archivo, en vez de duplicar un texto contractual.
+const FALLBACK = join(REPO, "web", "public");
 const PORT = Number(process.env.PORT || 5178);
 
 const MIME = {
@@ -25,25 +34,36 @@ const MIME = {
   ".woff2": "font/woff2",
 };
 
+async function readFrom(base, requestPath) {
+  const filePath = normalize(join(base, requestPath));
+  // Sigue comprobandose por base y no solo por ROOT: son dos raices, y una ruta con ".."
+  // podria escaparse de una aunque cayera dentro de la otra.
+  if (!filePath.startsWith(base + sep)) return null;
+
+  try {
+    return { body: await readFile(filePath), filePath };
+  } catch {
+    return null;
+  }
+}
+
 createServer(async (request, response) => {
   const requestPath = decodeURIComponent((request.url || "/").split("?")[0]);
-  const filePath = normalize(join(ROOT, requestPath === "/" ? "/app.html" : requestPath));
+  const wanted = requestPath === "/" ? "/app.html" : requestPath;
 
-  if (!filePath.startsWith(ROOT + sep)) {
-    response.statusCode = 403;
-    response.end("403");
+  const hit = (await readFrom(ROOT, wanted)) ?? (await readFrom(FALLBACK, wanted));
+
+  if (!hit) {
+    response.statusCode = 404;
+    response.end("404");
     return;
   }
 
-  try {
-    const file = await readFile(filePath);
-    response.setHeader("content-type", MIME[extname(filePath)] || "application/octet-stream");
-    response.setHeader("cache-control", "no-store");
-    response.end(file);
-  } catch {
-    response.statusCode = 404;
-    response.end("404");
-  }
+  response.setHeader("content-type", MIME[extname(hit.filePath)] || "application/octet-stream");
+  response.setHeader("cache-control", "no-store");
+  response.end(hit.body);
 }).listen(PORT, "127.0.0.1", () => {
   console.log(`Legado servido en http://localhost:${PORT} (raiz: ${ROOT})`);
+  console.log(`  app legada     http://localhost:${PORT}/`);
+  console.log(`  landing legada http://localhost:${PORT}/index.html`);
 });

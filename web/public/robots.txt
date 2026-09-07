@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /$
+Allow: /legal.html
+# La app vive detras del login: indexarla no aporta nada y competiria en buscadores con
+# la landing, que es la pagina que si queremos que se encuentre.
+Disallow: /app
+
+Sitemap: https://trazzajournal.com/sitemap.xml
