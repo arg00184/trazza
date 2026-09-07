@@ -301,7 +301,6 @@ export const es = {
   "movement.empty.none": "No hay movimientos todavia",
   "movement.empty.createFirst": "Crea el primero desde Nuevo movimiento.",
   "movement.recent.title": "Movimientos recientes",
-  "movement.recent.subtitle": "Ingresos y costes operativos.",
 
   "dashboard.filter.firm": "Empresa",
   "dashboard.filter.account": "Cuenta",

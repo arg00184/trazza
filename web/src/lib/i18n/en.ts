@@ -303,7 +303,6 @@ export const en: Record<TranslationKey, string> = {
   "movement.empty.none": "No movements yet",
   "movement.empty.createFirst": "Create the first one from New movement.",
   "movement.recent.title": "Recent movements",
-  "movement.recent.subtitle": "Income and operating costs.",
 
   "dashboard.filter.firm": "Firm",
   "dashboard.filter.account": "Account",

@@ -20,7 +20,6 @@ export function MovementsTable({ movements, accounts, currency }: MovementsTable
       <div className="panel-heading">
         <div>
           <h2>{t("movement.recent.title")}</h2>
-          <p>{t("movement.recent.subtitle")}</p>
         </div>
       </div>
       <div className="table-scroll">
