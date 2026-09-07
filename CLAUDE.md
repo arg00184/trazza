@@ -31,6 +31,16 @@ Reglas de Vercel que conviene tener presentes al tocar `vercel.json`: el orden e
 que exista de verdad (por eso `/app/:path*` no rompe `/assets/...`). Y `vercel.json` es
 JSON estricto: no admite comentarios, de ahí que el porqué esté aquí y no allí.
 
+**Los comandos entran en `web/` con `cd` y llaman a `corepack pnpm`, no a `pnpm` a
+secas.** No es cosmético: el primer intento usaba `pnpm --dir web` desde la raíz y el
+build murió con *"Ignoring not compatible lockfile"* → *"Headless installation requires a
+pnpm-lock.yaml file"*. Vercel elige la versión de pnpm mirando el lockfile **del
+directorio raíz**, y ahí no hay ninguno (el nuestro vive en `web/`), así que arrancaba un
+pnpm antiguo que no entiende `lockfileVersion: 9.0`. Con `cd web` primero, corepack lee
+el `packageManager` de `web/package.json` y usa la versión exacta — y así la versión no
+queda duplicada en `vercel.json`, que se desincronizaría a la primera. Si algún día
+mueves el lockfile o cambias de gestor, esto es lo primero que hay que revisar.
+
 Si hace falta volver atrás de urgencia, lo rápido no es git: es **hacer rollback al
 despliegue anterior desde el panel de Vercel**, que reactiva el legado tal cual estaba.
 

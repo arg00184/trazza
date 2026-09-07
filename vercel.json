@@ -1,8 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm --dir web install --frozen-lockfile",
-  "buildCommand": "pnpm --dir web build",
+  "installCommand": "cd web && corepack pnpm install --frozen-lockfile",
+  "buildCommand": "cd web && corepack pnpm build",
   "outputDirectory": "web/dist",
+  "build": {
+    "env": {
+      "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
+    }
+  },
   "redirects": [
     {
       "source": "/app.html",
