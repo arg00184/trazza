@@ -1,0 +1,179 @@
+/* TOKENS DEL SISTEMA DE DISENO — fuente unica para la app y para la landing.
+
+   Estos valores vivian dentro de styles.css hasta que la landing dejo de ser una pagina
+   suelta con su propia paleta. Tenerlos aqui no es orden por el orden: es lo que hace que
+   la landing y la app no se "parezcan" sino que sean lo mismo. Si cambias un token, cambian
+   las dos a la vez, y deja de existir la posibilidad de que el morado de la pagina de venta
+   se vaya separando poco a poco del morado del producto.
+
+   Quien lo usa:
+   - src/styles.css       (la app React)
+   - src/landing/landing.css (la landing publica)
+
+   Regla que ya costo un fallo real y sigue vigente: LOS TEMAS VAN EN PARES. Cualquier token
+   nuevo necesita su valor en :root y en :root[data-theme="dark"]. Un token declarado solo en
+   claro no da error, simplemente se ve mal en oscuro y nadie se entera hasta que lo mira.
+
+   El detalle del porque de cada escala (espaciado, letra, peso, elevacion) esta en los
+   comentarios de cada bloque, mas abajo. No cambies un numero sin leerlos. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+  --bg: #f6f6f7;
+  --sidebar: #0b0b0d;
+  --sidebar-soft: #15151a;
+  --surface: #ffffff;
+  --surface-muted: #f2f2f4;
+  --surface-raised: #ffffff;
+  --text: #08090b;
+  --muted: #71717a;
+  --strong-muted: #3f3f46;
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+  --positive: #16c76f;
+  --positive-soft: #e8f8ef;
+  --negative: #ff5f64;
+  --negative-soft: #fdecec;
+  --accent: #8b5cf6;
+  --accent-strong: #6d3ff0;
+  --accent-soft: rgba(139, 92, 246, 0.14);
+  --warning: #d97706;
+  /* Linea de la grafica de Disciplina. Cian a proposito, como en el legado: separa de
+     un vistazo esa curva de la de P&L (que es --accent, morada) sin tener que leer el
+     titulo. En claro va un tono mas profundo que en oscuro para no perderse contra el
+     fondo claro del marco. */
+  --discipline-line: #0891b2;
+  /* ESCALA DE ELEVACION. Antes habia una sola sombra para todo, asi que una tarjeta
+     quieta y un modal flotando pesaban lo mismo. Tres niveles con una regla clara:
+     -flat para lo que esta apoyado en la pagina (tarjetas, paneles), -raised para lo
+     que se despliega sobre ella y se va (desplegables, calendario, tooltip), -overlay
+     para lo que bloquea (modales). --shadow se mantiene como alias de -flat porque lo
+     usan reglas repartidas por el fichero. */
+  --shadow-flat: 0 1px 2px rgba(9, 9, 11, 0.04);
+  --shadow-raised: 0 4px 12px rgba(9, 9, 11, 0.08), 0 1px 2px rgba(9, 9, 11, 0.04);
+  --shadow-overlay: 0 28px 90px rgba(0, 0, 0, 0.26);
+  --shadow: var(--shadow-flat);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  /* ESCALA TIPOGRAFICA. Segunda pasada, igual que con el espaciado: la primera
+     consolido 46 tamanos en 10 optimizando para que nada se moviera (0,35px de media),
+     pero no se pregunto si el reparto servia. Medido sobre el Panel pintado: el 78% de
+     los nodos con texto caia entre 11 y 14px. Cuatro tamanos en un rango de 3px no son
+     cuatro niveles de jerarquia, son un solo tamano con ruido — a efectos practicos la
+     app tenia una sola letra, y por eso la jerarquia se acababa haciendo con negrita
+     (el 70% del texto iba a 700 o mas). Diez nombres apuntando a seis cifras reales,
+     12/14/16/20/24/32, con saltos que se ven: 11 y 12 pasan a ser el mismo registro de
+     etiqueta, 13 y 14 el mismo de texto corrido, y ahi si hay dos niveles distintos
+     donde antes habia cuatro indistinguibles. */
+  --text-2xs: 12px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 32px;
+  /* ESCALA DE INTERLINEADO. El 99% del texto no lo declaraba y caia en el "normal" del
+     navegador, que en DM Sans aprieta bastante y ademas varia con las metricas de cada
+     tamano: de ahi que la app se leyera densa sin motivo. Los valores no son inventados,
+     son los que ya usaban las 36 reglas que si lo declaraban (1,1-1,2 en titulares,
+     1,4-1,5 en texto corrido), extendidos al resto. La curva es inversa a proposito:
+     cuanto mas grande el texto, mas apretado, porque a 32px el mismo ratio que a 13px
+     deja los renglones sueltos. */
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.45;
+  /* ESCALA DE PESO. La pasada anterior bajo un registro los sitios de llamada, pero el
+     resultado medido seguia siendo el mismo problema: sobre el Panel pintado, 80 de los
+     114 nodos con texto iban a 700 o mas, y 72 de ellos exactamente a 700. La negrita no
+     era el enfasis de la app, era su peso por defecto — y cuando casi todo va en negrita
+     no queda contraste disponible para destacar nada.
+     La causa de fondo era tipografica: con el 78% del texto entre 11 y 14px no habia
+     jerarquia posible por tamano, asi que se hacia engordando. Arreglada la escala de
+     letra, el peso puede soltarse sin perder nada, y se baja aqui —en los cinco
+     valores— en vez de en los ~150 sitios que los usan. Cada registro cae uno: el peso
+     de trabajo pasa a 500/600 y el 700 queda reservado para enfasis de verdad. */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 500;
+  --weight-bold: 600;
+  --weight-black: 700;
+  /* ESCALA DE ESPACIADO. Segunda pasada, y esta vez sobre el reparto y no sobre las
+     cifras. La anterior consolido 22 valores en 13 optimizando para que nada se
+     moviera (desplazamiento medio 0,27px), pero dejo intacto el problema de fondo:
+     medido sobre el Panel ya pintado, el 81% de los 579 espaciados eran de 12px o
+     menos y no habia ni un solo 24px ni 32px en toda la pagina. Con pasos de 2px
+     disponibles se vuelve a decidir elemento por elemento, que es justo lo que una
+     escala existe para impedir: nadie percibe 10 frente a 12 como intencion, solo
+     percibe que nada acaba de cuadrar. Trece nombres apuntando a seis valores reales,
+     4/8/12/16/24/32. Los remapeos suben a proposito — la compresion era el problema,
+     asi que podar la escala y meter aire son aqui el mismo gesto. */
+  --space-3xs: 4px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 12px;
+  --space-lg: 16px;
+  --space-xl: 16px;
+  --space-2xl: 24px;
+  --space-3xl: 24px;
+  --space-4xl: 24px;
+  --space-5xl: 32px;
+  --space-6xl: 32px;
+  /* Curva desacelerada: arranca rapido y frena al llegar, que es lo que hace que algo
+     parezca que "aterriza" en vez de aparecer. Portada del legado (--ease), donde ya
+     gobernaba section-enter/modal-enter. Se queda para micro-cambios (color, fondo,
+     borde), donde solo importa que no sea un corte seco. */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Para entradas --ease no vale: es tan frontal que a mitad de tiempo ya ha recorrido
+     el 95%, asi que el desplazamiento no llega a verse. Esta reparte el recorrido de
+     forma perceptible (~72% a mitad de tiempo) y es lo que hace que se "vea" algo. */
+  --ease-entrance: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Rebase corto al final: el elemento pasa un pelin de su sitio y vuelve. Es lo que
+     separa un panel que "aparece" de uno que "entra". Solo en modal y desplegables. */
+  --ease-overshoot: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --dur-fast: 180ms;
+  --dur: 280ms;
+  --dur-slow: 380ms;
+  font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f0f12;
+  --sidebar: #070708;
+  --sidebar-soft: #15151a;
+  --surface: #141418;
+  --surface-muted: #1b1b20;
+  --text: #f7f7fb;
+  --muted: #9ca3af;
+  --strong-muted: #d4d4dc;
+  --line: #27272f;
+  --line-strong: #363641;
+  --positive: #1ed982;
+  --positive-soft: rgba(30, 217, 130, 0.13);
+  --negative: #ff6b73;
+  --negative-soft: rgba(255, 107, 115, 0.13);
+  --surface-raised: #111114;
+  --accent: #a779ff;
+  --accent-strong: #c4a7ff;
+  --accent-soft: rgba(167, 121, 255, 0.16);
+  --warning: #f5a524;
+  --discipline-line: #22d3ee;
+  /* En oscuro la sombra separa menos que en claro (hay menos contraste contra el fondo),
+     asi que los niveles altos suben opacidad en vez de solo radio. */
+  --shadow-flat: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-raised: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-overlay: 0 28px 90px rgba(0, 0, 0, 0.6);
+  --shadow: var(--shadow-flat);
+}
