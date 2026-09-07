@@ -4,17 +4,54 @@ Journal + dashboard de finanzas para traders de prop firms (~40 usuarios reales 
 producción). Este archivo existe porque el trabajo se retoma en un Mac nuevo sin el
 historial de conversación anterior — léelo entero antes de tocar nada.
 
+## Qué sirve el dominio (cambió el 7 de septiembre de 2026)
+
+`trazzajournal.com` sirve **el build de React**, no el legado. Dos páginas, un solo
+build de Vite desde `web/`:
+
+| URL | Fichero | Qué es |
+|---|---|---|
+| `/` | `web/index.html` | Landing pública |
+| `/app` | `web/app/index.html` | App React (SPA) |
+| `/legal.html` | `web/public/legal.html` | Aviso legal, privacidad, cookies, términos |
+
+`/app.html` **redirige a `/app`** (307, temporal a propósito) para que no se rompan los
+marcadores de los 40 usuarios ni las URLs de retorno de Stripe antiguas. No lo pases a
+301 sin pensarlo: un 301 se cachea en el navegador para siempre y deja de haber vuelta
+atrás.
+
+Todo esto vive en `vercel.json` (raíz), que además fija `buildCommand` e
+`outputDirectory`. **Antes Vercel servía la raíz del repo tal cual**, sin build: eso
+significaba que `trazzajournal.com/supabase-rls.sql` y compañía se descargaban en abierto
+(comprobado con `curl`, devolvía 200). Al pasar a servir solo `web/dist` esa exposición
+desaparece — no la reintroduzcas moviendo el `outputDirectory` a la raíz.
+
+Reglas de Vercel que conviene tener presentes al tocar `vercel.json`: el orden es
+**redirects → sistema de ficheros → rewrites**, así que un rewrite nunca tapa un fichero
+que exista de verdad (por eso `/app/:path*` no rompe `/assets/...`). Y `vercel.json` es
+JSON estricto: no admite comentarios, de ahí que el porqué esté aquí y no allí.
+
+Si hace falta volver atrás de urgencia, lo rápido no es git: es **hacer rollback al
+despliegue anterior desde el panel de Vercel**, que reactiva el legado tal cual estaba.
+
 ## Las dos apps, un solo Supabase
 
-- **Legado** (`app.html` + `app.js` + `styles.css`, JS vanilla, sin build): lo que sirve
-  `trazzajournal.com` hoy. Estable, con los 40 usuarios reales encima.
-- **React** (`web/`, Vite + TS): reescritura en curso, es donde está todo el trabajo
-  reciente. `cd web && pnpm install && pnpm dev` (puerto 5174, ver `.claude/launch.json`).
-  `pnpm typecheck` antes de dar nada por bueno — no hay tests, typecheck es la única red.
+- **React** (`web/`, Vite + TS): es el producto. `cd web && pnpm install && pnpm dev`
+  (puerto 5174, ver `.claude/launch.json`). Ojo: el dev server sirve **la landing en `/`
+  y la app en `/app/`**, igual que producción — esa equivalencia es deliberada, no la
+  "arregles" devolviendo la app a la raíz. `pnpm typecheck` antes de dar nada por bueno —
+  no hay tests, typecheck es la única red.
+- **Legado** (`legacy/`: `app.html` + `app.js` + `styles.css` + `i18n.js`, más
+  `index.html`, que fue la landing hasta septiembre de 2026). **Archivado, ya no se
+  despliega ni se toca.** Está ahí para consultar cómo hacía algo la versión anterior.
+  Para verlo: configuración `trazza-legacy-*` de `.claude/launch.json`, que sirve
+  `legacy/` en el 5178 (`/` es la app, `/index.html` la landing vieja; `legal.html` se
+  resuelve contra `web/public/` porque se movió con la app nueva y no se duplica).
 
-Ambas comparten las mismas tablas de Supabase (`firms`, `accounts`, `transactions`,
-`journal_entries`, `journal_error_types`, `subscriptions`). Eso importa para cualquier
-cambio de esquema: lo que se toque en SQL lo ven las dos apps a la vez.
+Las dos comparten las mismas tablas de Supabase (`firms`, `accounts`, `transactions`,
+`journal_entries`, `journal_error_types`, `subscriptions`). Sigue importando para
+cualquier cambio de esquema: el legado archivado no se rompe solo porque no se sirva, y
+si algún día se vuelve a levantar tiene que seguir leyendo lo mismo.
 
 `web/.env.local` no viaja con git (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) —
 cópialo de la máquina anterior o pídelo.
@@ -123,6 +160,30 @@ mientras las del Journal la paran en la curva.
 (mismo patrón que `.journal-error-type-row`), altura de fila uniforme, y paginación (20
 por página) donde antes se pintaban todas las filas de golpe.
 
+**El corte a React y la landing nueva**, el **7 de septiembre de 2026**. El legado salió
+de la raíz a `legacy/`, el dominio pasó a servir el build de Vite (ver la primera sección)
+y la landing se rehízo entera sobre los tokens de la app: mismo morado, misma letra,
+mismas sombras y la misma cinta de colores que hay detrás de la tarjeta de acceso, que es
+lo que hace que entrar en el producto no parezca cambiar de sitio. Es un archivo estático
+(`web/index.html` + `src/landing/`) y **no arrastra el bundle de React**: 22 kB de CSS y
+7 kB de JS, frente a los 692 de la app.
+
+Detalles de la landing que no son obvios y conviene no deshacer:
+
+- **Su traducción no usa el diccionario de la app.** El castellano vive en el HTML y
+  `landing.ts` solo lleva el inglés, así que no hay dos copias del texto que puedan
+  divergir y el contenido real viaja en el documento, que es lo que lee Google. Comparte
+  con la app las claves `trazza:theme` y `trazza:language` de `localStorage`, de modo que
+  quien elige inglés u oscuro en la landing se encuentra la app igual.
+- **`?mode=signup`.** Los botones de alta apuntan a `/app?mode=signup` y `entryParams.ts`
+  lo lee para abrir `AuthScreen` directamente en registro. Antes ese parámetro se
+  ignoraba y quien pulsaba "Crear cuenta" aterrizaba en el formulario de acceso.
+- **La vuelta de Stripe (`?checkout=success`) refresca la suscripción dos veces**, a los
+  1,2 y a los 4 segundos. La fila la escribe el webhook, no el checkout, y Stripe devuelve
+  al navegador sin esperarlo: sin ese reintento, un recién pagado podía ver el paywall.
+- Los dos parámetros se leen **una sola vez** al cargar el módulo y se limpian de la barra
+  con `replaceState`, para que "success" no se vuelva a disparar en cada recarga.
+
 ## Qué queda
 
 **Del plan original no queda nada abierto**, y a 26 de agosto de 2026 tampoco quedan
@@ -139,6 +200,31 @@ de la pantalla. No es un ajuste de espaciado: `.journal-day span/strong/small` y
 `text-overflow: ellipsis`, que es justo el patrón que este archivo marca como "peor que
 no mostrarlo" más abajo. Pide una disposición distinta para móvil (lista en vez de
 rejilla, o scroll horizontal deliberado en vez de recorte accidental).
+
+**Desplegar el cambio de dominio.** El corte a React está hecho y verificado en local
+(build, rutas, los dos temas, móvil), pero a 7 de septiembre de 2026 **no se ha
+desplegado ni se ha comprobado contra producción**.
+
+⚠️ **Antes del primer despliegue hay que dar de alta `VITE_SUPABASE_URL` y
+`VITE_SUPABASE_ANON_KEY` en las variables de entorno del proyecto de Vercel.** Es el
+único paso que no viaja en el repo y el que más caro sale olvidar. Hasta ahora Vercel
+nunca necesitó variables porque servía ficheros estáticos y el legado llevaba la URL y la
+clave **escritas a mano dentro de `app.js`** (líneas 12-13). React las lee de
+`import.meta.env` y Vite las incrusta **en tiempo de build**: si Vercel construye sin
+ellas, `isSupabaseConfigured` sale `false`, la app despliega en modo demo y **nadie puede
+entrar** — y no falla el build, así que no hay ningún aviso. Los valores están en
+`web/.env.local`, que no viaja con git. (Que la clave anónima estuviera escrita en el
+código no era un fallo de seguridad: es pública por diseño y acaba en el navegador de
+todos modos.)
+
+Al desplegar hay dos cosas más que mirar sí o sí: que `/app.html` redirige de verdad (es
+lo que sostiene los marcadores de los 40 usuarios) y que el primer checkout real vuelve
+bien. Y una que hay que hacer aparte,
+porque no viaja en el despliegue de Vercel: **redesplegar las dos Edge Functions de
+Stripe**, `create-checkout-session` y `create-portal-session`, cuyas URLs de retorno ya
+apuntan a `/app` en el código. Mientras no se redesplieguen siguen devolviendo a
+`/app.html`, que funciona por la redirección — así que no es urgente, pero sí queda a
+medias.
 
 Los cabos de CSS que hubo aquí sí están todos cerrados a 26 de agosto de 2026: las tres
 reglas `.workspace` duplicadas se consolidaron en una (con cuidado: el `min-width: 0`
@@ -245,8 +331,26 @@ sesión no vuelva a pisarlas.
   estado a algo que ya tiene regla de tema oscuro, **el estado necesita su propio par
   de tema** o no se verá en oscuro. Y compruébalo midiendo el color computado: leer el
   CSS no lo delata.
+- **Una capa decorativa dentro de un contenedor con `overflow: hidden` se corta donde
+  acaba el contenedor, no donde acaba su degradado.** La cinta de colores del hero
+  (`.hero-ribbon`) iba de -30% a 130% del alto de `.hero`: los dos recortes caían en
+  plena zona opaca del degradado y dejaban dos líneas horizontales duras cruzando la
+  página, muy visibles en oscuro. Se arregla haciendo que la caja de la capa coincida
+  con la del recorte (`top: 0; height: 100%`), para que sus extremos transparentes caigan
+  justo sobre los cortes.
+  **Y el arreglo "obvio" es peor: `mask-image` no vale aquí.** La máscara se aplica
+  *después* del filtro y su caja es la del elemento, que no incluye lo que el `blur()`
+  derrama fuera — así que recorta el propio difuminado y devuelve un paralelogramo de
+  bordes duros, que es exactamente lo que se quería evitar. Con desenfoques grandes, la
+  geometría manda; la máscara no.
 
 ## El sistema de diseño — léelo antes de tocar `styles.css`
+
+**Los tokens ya no viven en `styles.css`: están en `web/src/styles/tokens.css`**, que
+importan tanto `styles.css` (la app) como `src/landing/landing.css` (la landing). Se
+sacaron ahí el 7 de septiembre de 2026, cuando la landing dejó de tener paleta propia. No
+es orden por el orden: es lo que impide que el morado de la página de venta se vaya
+separando poco a poco del morado del producto. Si cambias un token, cambian las dos.
 
 La idea de fondo, por si hay tentación de "mejorarlo": lo que hace que una interfaz se
 lea como cuidada no es tener buen ojo cada vez, es **tener pocos valores donde elegir**.
@@ -287,6 +391,23 @@ La única letra fluida de la app es la cifra titular del Panel
 (`.metric-card.is-featured strong`), un `clamp()` con los topes atados a la escala. Es
 una excepción a propósito y está comentada como tal.
 
+### La landing extiende la escalera hacia arriba, no la contradice
+
+`landing.css` añade dos peldaños **por encima** del 32 de `.view-stack`
+(`--landing-rung: 48` entre la cabecera de un bloque y su contenido, `--landing-block`
+entre bloques de la página) y dos tamaños de letra por encima del tope de 32
+(`--landing-display`, `--landing-heading`, los dos `clamp()` con el suelo atado a un
+valor real de la escala). Están arriba del todo a propósito: así no compiten con ningún
+valor de la escala interna y la regla de "ningún nivel vale lo mismo que su vecino" sigue
+en pie. Si necesitas un espaciado nuevo en la landing, el sitio correcto es ese rango
+alto — no inventar un 10 o un 14 en medio.
+
+Lo demás de la landing —color, peso, radios, sombras, curvas— sale de `tokens.css` sin
+excepción. Las maquetas de producto del hero y de las tarjetas (`.mock-*`) son **HTML con
+esos mismos tokens, no capturas de pantalla**: se ven nítidas en cualquier pantalla,
+cambian de tema con la página y no se quedan viejas cuando el producto cambia. Si te
+piden actualizar "la captura" de la landing, lo que hay que tocar es el marcado.
+
 ## Componentes propios que sustituyen a nativos
 
 Tres controles del navegador no admiten estilos porque no los pinta la página: la lista
@@ -317,12 +438,28 @@ inventes sombras nuevas) y viven en `web/src/components/`.
   `<html>` coincide con `innerWidth`. Para comparar dos estados usa variables CSS
   (`setProperty`/`removeProperty` sobre `:root`), nunca geometría del `<html>`, y no
   metas `await` dentro del inyector — son justo los que caducan.
+- **Si el panel del navegador está oculto o colapsado, sus capturas mienten.** Pasó
+  entero en la sesión de la landing: el DOM medía bien (`getBoundingClientRect` daba la
+  cabecera en `top: 0`), pero las capturas salían en blanco o con el contenido desplazado
+  cientos de píxeles, porque un panel oculto no repinta. `tabs_context` dice
+  explícitamente si está oculto — mirarlo *antes* de creerse una captura ahorra la ronda
+  entera de depurar un bug que no existe. Cuando pase, la salida es capturar por CDP
+  contra el Chrome del sistema: Node trae `WebSocket` global desde la v22, así que un
+  script de ~50 líneas sin dependencias da control total del viewport, del
+  `deviceScaleFactor` (2 para poder leer el texto) y del scroll. Dos avisos si lo
+  rehaces: `chrome --headless --screenshot` con un `#ancla` en la URL captura a mitad del
+  desplazamiento suave y sale medio en blanco, y para probar el tema oscuro hay que
+  sembrar `localStorage` navegando primero al mismo origen, porque el tema se decide en
+  el script de arranque del `<head>`.
 - Los commits van agrupados por qué cuentan, no por orden cronológico — cuando el
   trabajo mezcla features distintas en los mismos archivos, merece la pena separar por
   parche antes de comitear (`git apply --cached` con un patch recortado a mano) en vez
   de meterlo todo junto. Cada commit debe compilar por sí solo (`pnpm typecheck` antes
   de comitear, no solo al final).
 - git: local manda sobre origin, push normal sin `--force` salvo que se pida explícito.
-- Antes de tocar el precio, la copia legal o cualquier texto contractual: son
-  `legal.html` y compañía, ese texto es lo que ve un usuario de pago — cambios ahí no
-  son solo estéticos.
+- Antes de tocar el precio, la copia legal o cualquier texto contractual: es
+  `web/public/legal.html` (se movió ahí al pasar el despliegue a Vite; se sirve igual en
+  `/legal.html`), y ese texto es lo que ve un usuario de pago — cambios ahí no son solo
+  estéticos. El precio, además, está escrito **en tres sitios que tienen que decir lo
+  mismo**: Stripe, `PlansModal` de la app y el objeto `pricing` de
+  `src/landing/landing.ts`.
