@@ -4947,15 +4947,19 @@ button {
   text-align: right;
 }
 
-/* :not(.payout) deja los dias de retiro con su azul propio (regla mas arriba). Sin par
-   de tema oscuro a proposito: --positive/--negative ya cambian con el tema y el color
-   va directo sobre <strong>, no heredado, asi que gana el empate en ambos temas. */
-.journal-day.positive:not(.payout) strong {
-  color: var(--positive);
+/* El importe del dia ya no va en verde/rojo: el usuario lo quiere a maximo contraste
+   —negro puro en claro, blanco puro en oscuro— con el signo cargado por el fondo suave
+   de la celda (.journal-day.positive/.negative). :not(.payout) deja los dias de retiro
+   con su azul propio (regla mas arriba). Aqui SI hace falta par de tema oscuro: #000 y
+   #fff son literales, no tokens que cambien solos. */
+.journal-day.positive:not(.payout) strong,
+.journal-day.negative:not(.payout) strong {
+  color: #000000;
 }
 
-.journal-day.negative:not(.payout) strong {
-  color: var(--negative);
+:root[data-theme="dark"] .journal-day.positive:not(.payout) strong,
+:root[data-theme="dark"] .journal-day.negative:not(.payout) strong {
+  color: #ffffff;
 }
 
 .journal-day small {
