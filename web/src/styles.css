@@ -613,9 +613,18 @@ button {
    El padding lateral va en --space-2xl porque .topbar lo cancela con un margen negativo
    atado a ESE mismo token para sangrar hasta los bordes. Si cambias el token aqui,
    cambialo alli: valen lo mismo, pero el acoplamiento se expresa por nombre. */
+/* El padding lateral pasa por una variable propia porque no es solo suyo: .topbar lo
+   cancela con un margen negativo para sangrar hasta los bordes, y las dos cifras tienen
+   que moverse juntas. Estaban atadas al mismo token (--space-2xl), que es lo que pedia la
+   leccion anterior, pero eso solo cubre el caso de que cambie el token: en cuanto un
+   @media le puso otro padding a .workspace y no al margen de .topbar, la cabecera volvio
+   a salirse — 8px por lado en las siete pantallas, tapados con overflow-x: hidden. Con la
+   variable, redeclararla en un breakpoint arrastra las dos a la vez y el fallo no se puede
+   volver a escribir. */
 .workspace {
+  --workspace-pad: var(--space-2xl);
   min-width: 0;
-  padding: 0 var(--space-2xl) var(--space-5xl);
+  padding: 0 var(--workspace-pad) var(--space-5xl);
 }
 
 .topbar {
@@ -630,11 +639,12 @@ button {
   /* El margen lateral negativo cancela el padding de .workspace para que la barra
      sangre hasta los bordes del area de contenido. Iba a fuego en -18px, acoplado
      en silencio a un token: al subir --space-2xl de 18 a 24 la cabecera se quedo
-     metida 6px por lado y su fondo desenfocado dejo de llegar al borde. Atado al
-     mismo token que el padding que cancela, que es lo que era desde el principio. */
-  margin: 0 calc(-1 * var(--space-2xl)) var(--space-2xl);
+     metida 6px por lado y su fondo desenfocado dejo de llegar al borde. Ahora no
+     cancela un token sino la variable con la que .workspace declara ese padding, asi
+     que sigue el valor que tenga en cada breakpoint (ver el comentario de .workspace). */
+  margin: 0 calc(-1 * var(--workspace-pad)) var(--space-2xl);
   border-bottom: 0;
-  padding: var(--space-base) var(--space-2xl);
+  padding: var(--space-base) var(--workspace-pad);
   background: color-mix(in srgb, var(--bg) 90%, transparent);
   backdrop-filter: blur(14px);
 }
@@ -7554,6 +7564,7 @@ tbody tr:last-child td {
   }
 
   .workspace {
+    --workspace-pad: var(--space-3xl);
     padding: var(--space-3xl);
   }
 
@@ -7622,6 +7633,7 @@ tbody tr:last-child td {
 
 @media (max-width: 560px) {
   .workspace {
+    --workspace-pad: var(--space-xl);
     padding: var(--space-xl);
   }
 
