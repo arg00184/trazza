@@ -7679,6 +7679,87 @@ tbody tr:last-child td {
     transform: translateX(-100%);
   }
 
+  /* ZONAS DE PULSACION
+     Toda la app esta calibrada a 38px de alto, y los glifos sueltos a 18-20. Es una
+     medida de raton, que apunta con un pixel; con el dedo el minimo por debajo del cual
+     se empieza a fallar son 44. Se sube el estandar entero aqui, en un sitio, en vez de
+     retocar control a control: asi sigue habiendo UNA altura de control por tamaño de
+     pantalla y no dos criterios sueltos conviviendo.
+     Va al final del breakpoint a proposito. La altura de 38 la ponen reglas de una sola
+     clase repartidas por el archivo (.ghost-action/.secondary-action/.danger-action,
+     .card-delete, .compact-icon...) y con la misma especificidad gana la que aparece
+     despues; este bloque esta por debajo de todas ellas. Lo que NO basta con que este
+     abajo son los selectores compuestos —.calendar-nav-heading .icon-control es (0,2,0)
+     y se come un .icon-control suelto este donde este—, asi que esos van nombrados. */
+  .theme-toggle,
+  .icon-control,
+  .calendar-nav-heading .icon-control,
+  .journal-calendar-snapshot.icon-control,
+  .compact-icon,
+  .card-delete,
+  .card-visibility {
+    width: 44px;
+    height: 44px;
+  }
+
+  .topbar-primary,
+  .primary-action,
+  .secondary-action,
+  .ghost-action,
+  .danger-action,
+  .custom-select-trigger,
+  .settings-form .custom-select-trigger,
+  .account-filter-row .custom-select-trigger,
+  .journal-cockpit-account-filter .custom-select-trigger,
+  .account-status-tabs button,
+  .firm-type-tabs button,
+  .journal-same-day button {
+    min-height: 44px;
+  }
+
+  /* Estos dos no se agrandan: son glifos deliberadamente discretos (el icono de info
+     pegado a una etiqueta, el interruptor de filtros pegado a un titulo) y subirlos a 44
+     los convertiria en botones de verdad, que es justo lo que se decidio que no fueran.
+     Lo que crece es solo la zona sensible, con un pseudoelemento transparente centrado:
+     el dibujo se queda en sus 18-20px y el dedo acierta en 44. */
+  .info-hint,
+  .filter-toggle-button {
+    position: relative;
+  }
+
+  .info-hint::after,
+  .filter-toggle-button::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Los periodos (3M/6M/12M/Todo) eran de 34x26: el caso mas claro de control de raton.
+     En vez de engordar cada pastilla y que el grupo se salga de la fila, el grupo pasa a
+     ocupar el ancho y cada pastilla se reparte lo que hay — el mismo gesto que ya hacen
+     .journal-mode-tabs y .journal-review-presets mas abajo, a 560. */
+  .period-range-tabs {
+    display: flex;
+    width: 100%;
+  }
+
+  .period-range-tabs button {
+    min-height: 40px;
+    flex: 1;
+  }
+
+  /* Y su cabecera tiene que dejarlas bajar. .panel-heading es una fila sin envolver: con
+     las pastillas pidiendo el ancho entero, lo que cedia era el titulo — "Resumen del
+     periodo" se quedaba en 145px y se partia en tres lineas. Con wrap, las pastillas caen
+     a su propia linea y el titulo recupera la suya. Las cabeceras que si caben en una
+     linea no se enteran: wrap solo actua cuando no cabe. */
+  .panel-heading {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 560px) {
