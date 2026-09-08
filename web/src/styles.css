@@ -7572,6 +7572,21 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  /* Las dos columnas de este panel piden 260 + 360 de minimo: con el gap y el padding son
+     692px que no se encogen. A 375 el panel medía 341 y el resto se iba por la derecha,
+     cortado en seco por su propio overflow: hidden — se perdia media cifra de "Empresas"
+     y, peor, la fila de tipos se salia entera, asi que Crypto y Otro no habia forma de
+     pulsarlos. No es un problema de la fila de tipos (ya envuelve): era su columna la que
+     estaba fuera. A una columna las dos vuelven dentro y el envolver empieza a funcionar.
+     Las cuatro cifras pasan a dos por fila: cuatro en 341px daban 66px por cifra. */
+  .firm-overview-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .firm-overview-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .account-card-rules,
   .accounts-overview-stats {
     grid-template-columns: 1fr;
