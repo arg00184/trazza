@@ -287,23 +287,39 @@ de los errores dejó de ser una deducción (ver abajo).
 El calendario del Journal en móvil estuvo aquí desde el 2 de septiembre de 2026 y **se
 cerró el 8**, con el resto de la pasada de móvil (tiene sección propia arriba).
 
-**Solo queda comprobar un cobro real.** El corte a React se desplegó el 7 de septiembre
-de 2026 y está verificado contra producción: rutas (`/`, `/app`, `/legal.html`,
-`/robots.txt`, `/sitemap.xml`), la redirección `/app.html` → `/app` conservando la query,
-el dominio sin www redirigiendo al www, la URL y la clave de Supabase incrustadas de
-verdad en el bundle (o sea, no salió en modo demo) y los `.sql` ya devolviendo 404. Las
-dos Edge Functions de Stripe se redesplegaron después, con las URLs de retorno apuntando
-ya a `/app`, y responden correctamente.
+**No queda nada abierto.** El último pendiente —comprobar un cobro real de punta a punta
+sobre el build de React— se cerró el **8 de septiembre de 2026** con el primer pago de
+verdad (ver "El primer pago" abajo).
 
-Lo único que no se ha podido probar sin gastar dinero es **la vuelta de Stripe dentro de
-React**: que devuelve a `/app?checkout=success` y que el paywall se levanta solo. La lógica
-está puesta (`entryParams.ts` lee el parámetro y `useSubscription` reintenta la lectura a
-los 1,2 y 4 segundos, porque la fila la escribe el webhook y Stripe no lo espera), pero
-conviene mirarlo la próxima vez que alguien pague.
+El corte a React se desplegó el 7 de septiembre de 2026 y está verificado contra
+producción: rutas (`/`, `/app`, `/legal.html`, `/robots.txt`, `/sitemap.xml`), la
+redirección `/app.html` → `/app` conservando la query, el dominio sin www redirigiendo al
+www, la URL y la clave de Supabase incrustadas de verdad en el bundle (o sea, no salió en
+modo demo) y los `.sql` ya devolviendo 404. Las dos Edge Functions de Stripe se
+redesplegaron después, con las URLs de retorno apuntando ya a `/app`, y responden
+correctamente.
 
-Ojo con la mitad que sí está probada, para no confundirlas: **el webhook funcionó de punta
-a punta en agosto, pero sobre el legado** (ver justo abajo). Lo que estrenó el corte a
-React es la vuelta al navegador, no la escritura de la fila.
+### El primer pago (8 de septiembre de 2026)
+
+`sergiootrading11@gmail.com` (`a3835d9c`) es el primer cobro real del proyecto. En
+`subscriptions`: `status = active`, `stripe_customer_id` y `stripe_subscription_id`
+puestos, `price_id = price_1U3k7SCelowhkFldSlwvgfNY` y `current_period_end` un mes
+exacto por delante (8 de octubre) → **plan mensual**. El importe concreto no se comprobó
+contra Stripe en esta sesión, pero el `price_id` es el que `STRIPE_PRICE_MONTHLY` sirve
+desde el cambio de precio del 13 de agosto, así que es el de 4,99.
+
+Con esto queda probada **la mitad que faltaba**: `price_id` y `current_period_end` solo
+los escribe `upsertPaidSubscription` dentro del webhook, y aquí los escribió sobre una
+fila que antes era `trialing` — o sea, webhook firmado, validado y aplicado **sobre el
+despliegue de React**, no solo sobre el legado como en agosto. La vuelta del navegador a
+`/app?checkout=success` con el reintento de `useSubscription` es la otra pieza que
+estrenó el corte a React; el usuario celebró el pago sin reportar que se quedara con el
+paywall puesto, así que el reintento hizo su trabajo.
+
+Antes de este pago la tabla no tenía ninguna suscripción `active`. La traza del webhook
+de agosto (usuario `3bc74b`, `updated_at` del 6 de agosto a las 14:13) sigue siendo
+válida como prueba de que el endpoint está de alta y el secreto de firma es el bueno,
+pero ya no es la única: ahora hay un `active` de verdad.
 
 **El código de cobro sí está revisado entero, el 8 de septiembre de 2026, y está bien.**
 Conviene saberlo para no volver a sospechar de él: `create-checkout-session` fija
@@ -314,9 +330,9 @@ variante correcta en Deno, y `getCurrentPeriodEnd` lee el campo en las dos forma
 tenido en la API de Stripe. Y que los dos usuarios que abrieron el checkout tengan
 `stripe_customer_id` escrito demuestra que esa mitad corre de verdad en producción.
 
-**Y el webhook está probado de punta a punta en producción**, aunque no lo parezca al mirar
-la tabla y no ver ni una suscripción activa. La prueba está en los datos, y conviene saber
-leerla para no volver a dudar de lo mismo:
+**Y el webhook está probado de punta a punta en producción.** Desde el 8 de septiembre de
+2026 hay una suscripción `active` de verdad (ver "El primer pago"), pero incluso antes la
+prueba ya estaba en los datos, y conviene saber leerla para no volver a dudar de lo mismo:
 
 `price_id` y `current_period_end` los escribe **un solo sitio en todo el sistema**:
 `upsertPaidSubscription`, dentro del webhook. El SQL se limita a declarar las columnas y
@@ -338,7 +354,11 @@ secreto— se hace gratis desde Stripe → Developers → Webhooks → **Send te
 200 lo prueba, y el historial de entregas de esa pantalla dice qué ha llegado. Pero no es
 un pendiente: nada indica que se haya movido nada desde agosto.
 
-### Por qué nadie ha pagado todavía (medido el 8 de septiembre de 2026)
+### Por qué casi nadie ha pagado todavía (medido el 8 de septiembre de 2026)
+
+**El 8 de septiembre de 2026 llegó el primer pago** (`sergiootrading11@gmail.com`,
+mensual — ver "El primer pago"). Lo de abajo se midió ese mismo día, justo antes, y sigue
+explicando el ritmo: un pago no cambia el análisis, lo confirma.
 
 Esto está aquí porque la lectura intuitiva es errónea y cuesta una sesión entera
 redescubrirlo. **No es que la gente se haya negado a pagar: es que casi a nadie se le ha
@@ -347,19 +367,21 @@ que el muro llevaba dos días puesto para la mayoría.
 
 Los números que importan, sacados de Supabase:
 
-- 54 registrados, de los cuales **9 son `lifetime`** y nunca pueden pagar → base real 45.
+- 54 registrados, de los cuales **11 son `lifetime`** y nunca pueden pagar → base real 43.
+  (Eran 9 hasta el 8 de septiembre de 2026, cuando se dieron dos de alta a mano.)
 - 5 nunca confirmaron el email ni entraron.
 - Solo **19** llegaron a crear una cuenta o empresa; 13 tienen ≥10 registros.
 - **2 inicios de sesión en los últimos 7 días.** Ese es el número de verdad.
-- Un solo usuario real ha abierto el checkout (7 de agosto) y no lo terminó — y es uno de
-  los más enganchados de todos.
+- Hasta el 8 de septiembre solo un usuario real había abierto el checkout (7 de agosto)
+  sin terminarlo. Ese día otro lo completó: primer pago.
 - **Tres semanas seguidas con cero altas** (17, 24 y 31 de agosto). El pico fue la semana
   del 13 de julio, con 11.
 
 Cruzando las tres cosas, el muro del 5 de septiembre cayó sobre **unas 4 personas
-realmente activas**. Que 0 de 4 paguen en dos días es aritmética, no una señal sobre el
-producto: para esperar la primera venta hacen falta del orden de 30-50 personas enganchadas
-llegando al paywall.
+realmente activas**. Que a los tres días pague 1 de esas 4 es aritmética, no una señal
+sobre el producto en ningún sentido: ni el 0 de antes era malo ni este 1 es bueno. Para
+leer algo de la conversión hacen falta del orden de 30-50 personas enganchadas llegando
+al paywall.
 
 Dos consecuencias prácticas. Una: **el precio no es la restricción** y bajarlo otra vez no
 arreglaría nada — la bajada de 6,99 a 4,99 se hizo sin evidencia, porque en ese momento aún
