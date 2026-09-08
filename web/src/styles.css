@@ -4880,16 +4880,20 @@ button {
 /* Marca el dia de hoy: primero un anillo en toda la celda, luego un punto suelto junto
    al numero, ninguno de los dos convencio. Un circulo relleno ALREDEDOR del numero,
    como una insignia — el numero se lee dentro del circulo, no al lado. */
+/* Dimensiones en em para que el circulo crezca con el numero (ahora --text-lg): sin
+   esto la insignia de "hoy" se quedaba en 20px y recortaba el digito mas grande. */
 .journal-day-today-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.2em;
   border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
   font-style: normal;
+  letter-spacing: 0;
 }
 
 /* Al senalar un dia se anima solo esa celda, no la semana entera: version anterior
@@ -4916,10 +4920,18 @@ button {
   white-space: nowrap;
 }
 
+/* El numero del dia es el ancla de la celda: sube de --text-xs a --text-lg para que
+   tenga mas peso visual que el importe (--text-sm). line-height 1 le quita la holgura
+   vertical y lo hace leer mas alto y limpio; el letter-spacing negativo y tabular-nums
+   lo estrechan un poco y le dan un digito de ancho fijo — mas moderno y alineado en
+   rejilla. En movil baja a --text-md (bloque @media 820) porque la celda encoge. */
 .journal-day span {
   color: var(--muted);
-  font-size: var(--text-xs);
+  font-size: var(--text-lg);
   font-weight: var(--weight-black);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* El importe del dia es el dato principal de la celda y pasa a mostrarse en el color
@@ -8002,6 +8014,10 @@ tbody tr:last-child td {
 
   .journal-day-amount.is-tight {
     display: inline;
+  }
+
+  .journal-day span {
+    font-size: var(--text-md);
   }
 
   .journal-day strong {
