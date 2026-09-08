@@ -4958,21 +4958,6 @@ button {
   color: var(--negative);
 }
 
-/* El numero del dia toma tambien el color de su resultado, no solo el importe: en el
-   ejemplo que paso el usuario los dias con operativa se distinguen por el numero
-   verde/rojo, no por una cifra pequena debajo. Misma familia de reglas que el <strong>
-   de arriba (:not(.payout) para dejar los retiros con su azul, sin par de tema oscuro
-   porque --positive/--negative ya cambian con el tema y el color va directo sobre el
-   <span>). La insignia de "hoy" no se ve afectada: .journal-day-today-badge fija su
-   propio color y fondo. */
-.journal-day.positive:not(.payout) span {
-  color: var(--positive);
-}
-
-.journal-day.negative:not(.payout) span {
-  color: var(--negative);
-}
-
 .journal-day small {
   color: var(--muted);
   font-size: var(--text-2xs);
