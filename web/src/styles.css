@@ -4836,12 +4836,17 @@ button {
   background: var(--surface);
 }
 
+/* Fondo de celda mas intenso que --positive-soft/--negative-soft (que rondan un 13% de
+   acento): aqui se sube a ~20% mezclando el acento con --surface, para que el verde y el
+   rojo del dia se lean de un vistazo como en el calendario de referencia. Es un mix local
+   y no un token nuevo a proposito — --positive-soft se usa en mas sitios (Panel, avisos)
+   y ahi el tono suave es el correcto. */
 .journal-day.positive {
-  background: var(--positive-soft);
+  background: color-mix(in srgb, var(--positive) 20%, var(--surface));
 }
 
 .journal-day.negative {
-  background: var(--negative-soft);
+  background: color-mix(in srgb, var(--negative) 20%, var(--surface));
 }
 
 /* El par de tema oscuro no es opcional aqui, mismo caso que el de mas arriba
@@ -4850,11 +4855,11 @@ button {
    por defecto, sin tenirse. En claro si se veia porque .journal-day.positive/.negative
    solo compiten ahi con la base .journal-day sin tema (0,1,0), que si pierden. */
 :root[data-theme="dark"] .journal-day.positive {
-  background: var(--positive-soft);
+  background: color-mix(in srgb, var(--positive) 22%, var(--surface));
 }
 
 :root[data-theme="dark"] .journal-day.negative {
-  background: var(--negative-soft);
+  background: color-mix(in srgb, var(--negative) 22%, var(--surface));
 }
 
 .journal-day.payout {
@@ -4920,34 +4925,31 @@ button {
   white-space: nowrap;
 }
 
-/* El numero del dia es el ancla de la celda: sube de --text-xs a --text-lg para que
-   tenga mas peso visual que el importe (--text-sm). line-height 1 le quita la holgura
-   vertical y lo hace leer mas alto y limpio; el letter-spacing negativo y tabular-nums
-   lo estrechan un poco y le dan un digito de ancho fijo — mas moderno y alineado en
-   rejilla. En movil baja a --text-md (bloque @media 820) porque la celda encoge.
+/* El numero del dia es secundario, como en el calendario de referencia: pequeno y
+   discreto arriba a la izquierda para que el protagonista sea el importe. tabular-nums y
+   line-height 1 se quedan (alineado y limpio); el peso baja a medium para que no compita.
    > span y no "span" a secas: el importe es <strong><span class="journal-day-amount">,
    y un ".journal-day span" tambien lo pintaba de --muted por seleccion directa (que
    gana a la herencia del color del <strong>), asi que el importe salia gris pese a su
    regla de color. El combinador hijo deja fuera ese span anidado. */
 .journal-day > span {
   color: var(--muted);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-black);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-/* El importe del dia es el dato principal de la celda y pasa a mostrarse en el color
-   de su resultado, como el resto de cifras con signo de la app (total del mes,
-   chart-delta, Finanzas). Eso es lo que le da el protagonismo; el fondo suave de la
-   celda (.journal-day.positive/.negative) se queda como refuerzo, no como unica senal.
-   El tamano NO sube de --text-sm: se probo --text-md y --text-lg y a los anchos
-   reales de la rejilla (span 8 de 12, ~66px de celda util en un portatil) recortaban
-   con elipsis los importes de cinco cifras, que es justo lo que este archivo prohibe
-   ("un importe truncado es peor que no mostrarlo"). El color ya carga la senal. */
+/* El importe es el dato principal de la celda y su protagonista: --text-md (un escalon
+   por encima del numero del dia) y a maximo contraste (regla de color mas abajo).
+   Ojo con el ancho: a este tamano un dia de cinco cifras con divisa ("-12.500 $") roza
+   el limite de la celda mas estrecha (el widget del dashboard, ~66px utiles). Si algun
+   dia se recorta con elipsis, la salida es notacion compacta tipo "K" en los formatos
+   del calendario (formatMoneyCompactSigned / formatAmountCompactSigned), no bajar aqui. */
 .journal-day strong {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
+  font-weight: var(--weight-black);
   text-align: right;
 }
 
@@ -8010,7 +8012,7 @@ tbody tr:last-child td {
   }
 
   .journal-day > span {
-    font-size: var(--text-md);
+    font-size: var(--text-xs);
   }
 
   .journal-day strong {
