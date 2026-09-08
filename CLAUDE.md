@@ -547,6 +547,16 @@ sesión no vuelva a pisarlas.
   estado a algo que ya tiene regla de tema oscuro, **el estado necesita su propio par
   de tema** o no se verá en oscuro. Y compruébalo midiendo el color computado: leer el
   CSS no lo delata.
+  **Y una tercera forma, la peor de depurar, el 8 de septiembre de 2026:** hay una regla
+  al final de `styles.css` ("Card surfaces: keep layout size but remove visible outlines")
+  que hace `border-color: transparent !important` sobre una lista larga de selectores. Con
+  `!important` gana a cualquier `border-color` sin `!important`, tenga la especificidad que
+  tenga. `.journal-day` estaba en esa lista, así que varios despliegues seguidos de reglas
+  de borde para el calendario no pintaron nada — el CSS salía, el navegador lo cargaba, y
+  el borde seguía transparente. El síntoma desde fuera es idéntico al de una caché que no
+  se refresca, y se fue media sesión ahí. Antes de tocar `border-color` de algo, `grep`
+  esa lista; si el elemento está, quítalo de ahí, no pongas otro `!important`. El tell:
+  `getComputedStyle(cell).borderTopColor` da `rgba(0, 0, 0, 0)` en vez de tu color.
 - **Una capa decorativa dentro de un contenedor con `overflow: hidden` se corta donde
   acaba el contenedor, no donde acaba su degradado.** La cinta de colores del hero
   (`.hero-ribbon`) iba de -30% a 130% del alto de `.hero`: los dos recortes caían en
