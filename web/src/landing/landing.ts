@@ -10,6 +10,8 @@
  * encuentra la app en ingles y en oscuro, sin volver a elegir.
  */
 
+import { inject } from "@vercel/analytics";
+
 import "./landing.css";
 
 type Language = "es" | "en";
@@ -302,6 +304,18 @@ applyLanguage();
 paintThemeButton();
 paintHeader();
 setUpReveal();
+
+/* Analitica de Vercel. Va aqui abajo, despues de pintar, porque no debe retrasar nada de
+   lo visible: si fallara, la pagina ya esta montada.
+ *
+ * Sin cookies y sin identificadores persistentes, asi que no hace falta banner de
+ * consentimiento ni tocar legal.html. El script se sirve desde el propio dominio
+ * (/_vercel/insights/script.js), no desde un tercero.
+ *
+ * En desarrollo se detecta solo y manda los eventos a un endpoint de depuracion, de modo
+ * que las visitas de trabajo no ensucian los datos reales. Y recoge los parametros utm_*
+ * de la URL, que es lo que permite separar que visita viene de cada red. */
+inject();
 
 if (import.meta.env.DEV) {
   const missing = [...spanishText.keys(), ...spanishAria.keys()]
