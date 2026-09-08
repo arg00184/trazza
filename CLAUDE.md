@@ -58,6 +58,16 @@ despliegue anterior desde el panel de Vercel**, que reactiva el legado tal cual 
   `legacy/` en el 5178 (`/` es la app, `/index.html` la landing vieja; `legal.html` se
   resuelve contra `web/public/` porque se movió con la app nueva y no se duplica).
 
+**Para revisar diseño sin entrar con una cuenta: `trazza-demo-*` (puerto 5175).** La app
+pide login contra Supabase, así que sin credenciales de un usuario real no hay forma de
+ver las siete pantallas por dentro — y eso es justo lo que hace falta para mirar el
+responsive. `.claude/serve-demo.mjs` arranca Vite apuntando `envDir` a una carpeta que no
+existe: no encuentra ningún `.env`, `isSupabaseConfigured` sale `false` y `App.tsx` cae en
+la rama `unconfigured`, que ya pinta el `AppShell` entero con los datos de `lib/demoState`.
+**No borra ni toca `web/.env.local`**, y el dev server de siempre sigue en el 5174, así que
+los dos pueden convivir. Si algún día se cambia cómo se decide el modo demo, esto es lo
+primero que deja de funcionar.
+
 Las dos comparten las mismas tablas de Supabase (`firms`, `accounts`, `transactions`,
 `journal_entries`, `journal_error_types`, `subscriptions`). Sigue importando para
 cualquier cambio de esquema: el legado archivado no se rompe solo porque no se sirva, y
@@ -194,22 +204,44 @@ Detalles de la landing que no son obvios y conviene no deshacer:
 - Los dos parámetros se leen **una sola vez** al cargar el módulo y se limpian de la barra
   con `replaceState`, para que "success" no se vuelva a disparar en cada recarga.
 
+**El móvil**, cerrado el **8 de septiembre de 2026** en nueve commits (más el del servidor
+demo, que hizo falta para poder mirarlo). El criterio lo fijó
+el usuario y conviene mantenerlo: **un diseño con dos disposiciones, no dos diseños.** Los
+tokens los comparten app y landing desde el corte a React precisamente para que el morado
+de una no se separe del de la otra; duplicar eso en una rama "móvil" reintroduce ese
+problema multiplicado por siete pantallas. Así que no hay tokens nuevos, ni colores
+nuevos, ni componentes duplicados: **lo que falla en móvil no es el diseño, es la
+disposición** — piezas que dan por hecho que hay sitio a lo ancho.
+
+- **El menú es un cajón** que entra sobre el contenido, no un bloque apilado arriba. Antes
+  ocupaba 538px: en un teléfono de 812, la primera pantalla entera era navegación. Se
+  cierra al elegir destino, con Escape y tocando la capa oscura; bloquea el scroll del
+  fondo y lo suelta al ensanchar, porque si no el estado se queda en "abierto" y deja el
+  `body` sin scroll en escritorio. Ese umbral está escrito **dos veces y en dos formas**:
+  `@media (max-width: 820px)` en la hoja y `matchMedia("(min-width: 821px)")` en
+  `AppShell`. Son complementarios a propósito, no iguales — si mueves uno, el otro es el
+  de al lado, no el mismo número.
+- **Empresas**: `.firm-overview-panel` pedía 692px que no se encogen, así que a 375 se
+  salía media pantalla y los filtros Crypto y Otro no se podían pulsar. A una columna.
+- **El calendario** saca la columna SEMANA de la rejilla y le da la fila entera debajo de
+  sus siete días — el marcado ya los emite en ese orden, así que no hubo que tocar el TSX.
+- **Zonas de pulsación a 44px** en un solo bloque al final del `@media` de 820. Los dos
+  glifos discretos (info y filtros) conservan su tamaño y crecen solo la zona sensible,
+  con un pseudoelemento transparente.
+- **El Panel a dos columnas** (era una) y las alturas de pantalla en `dvh`.
+
+Se verificó midiendo, no mirando: las **48 combinaciones** de 6 vistas × claro/oscuro ×
+es/en × 375 y 414px, sin un elemento fuera de la ventana ni un texto truncado con elipsis.
+Y los diez commits pasan `pnpm typecheck` por separado, comprobado uno a uno.
+
 ## Qué queda
 
 **Del plan original no queda nada abierto**, y a 26 de agosto de 2026 tampoco quedan
 cabos: las siete pantallas de React están pulidas, Cuentas quedó cerrada y la severidad
 de los errores dejó de ser una deducción (ver abajo).
 
-**Calendario del Journal — la rejilla no funciona en móvil.** Detectado el 2 de
-septiembre de 2026 revisando visualmente el apretón al calendario de esa misma sesión,
-pero es un problema estructural previo, no algo que rompiera esa sesión ni la anterior:
-`@media (max-width: 560px)` ya ajusta gap y padding, pero la rejilla sigue siendo de 8
-columnas fijas (7 días + semana), y a 375px no hay sitio — los números de día, los
-importes y el conteo de operaciones se recortan con elipsis, y la columna SEMANA se sale
-de la pantalla. No es un ajuste de espaciado: `.journal-day span/strong/small` ya usan
-`text-overflow: ellipsis`, que es justo el patrón que este archivo marca como "peor que
-no mostrarlo" más abajo. Pide una disposición distinta para móvil (lista en vez de
-rejilla, o scroll horizontal deliberado en vez de recorte accidental).
+El calendario del Journal en móvil estuvo aquí desde el 2 de septiembre de 2026 y **se
+cerró el 8**, con el resto de la pasada de móvil (tiene sección propia arriba).
 
 **Solo queda comprobar un cobro real.** El corte a React se desplegó el 7 de septiembre
 de 2026 y está verificado contra producción: rutas (`/`, `/app`, `/legal.html`,
@@ -294,6 +326,25 @@ sesión no vuelva a pisarlas.
   que valía `--space-2xl`. Al subir ese token a 24 la cabecera se quedó metida 6px por
   lado y su fondo desenfocado dejó de llegar al borde, sin que nada lo delatara. Si un
   número cancela a otro, exprésalo con el mismo token y no con su valor.
+  **Y atarlos al mismo token no basta: hay que atarlos a la misma variable.** El arreglo
+  de arriba aguantó hasta que un `@media` le cambió el padding a `.workspace` y no el
+  margen a `.topbar` — con eso la cabecera volvió a salirse, 8px por lado en las siete
+  pantallas, tapados por un `overflow-x: hidden` que hacía invisible el síntoma. Un token
+  solo cubre que cambie el token; una variable propia (`--workspace-pad`, declarada por
+  quien pone el padding y consumida por quien lo cancela) cubre también que cambie el
+  breakpoint, porque redeclararla arrastra las dos a la vez. Mismo patrón en
+  `--journal-calendar-bleed`. Si ves un `overflow: hidden` puesto para que algo "no se
+  note", sospecha: casi siempre tapa una cuenta que no cuadra.
+- **Una regla CSS puede apuntar a una clase que ya no existe y no avisa de nada.** El
+  `@media` de 820 repartía `.sidebar-nav` en dos columnas y ocultaba `.sidebar-status`
+  para que el menú no se comiera la pantalla en móvil. Nunca se aplicaron: el marcado usa
+  `.nav-list` / `.nav-group` desde que se fundió el interruptor de área con la lista, y
+  nadie renombró el CSS. El bug parecía "falta CSS de móvil" cuando en realidad **sobraba
+  CSS que no apuntaba a nada**. Había cuatro reglas así y la cuarta apareció mirando el
+  bundle ya desplegado, lejos del `@media`, en la zona de pares de tema oscuro — esa
+  además pintaba fondo claro sobre el riel, que es oscuro con cualquier tema. Al tocar
+  responsive, comprueba con `grep` que cada selector del `@media` existe en algún `.tsx`
+  antes de suponer que la regla se está aplicando.
 - **Los breakpoints calculados midiendo caducan cuando cambia la medida.** El apilado
   de la barra superior estaba en 960px porque ahí era donde dejaban de caber los seis
   controles; al ensanchar el botón principal pasaron a pedir 5px más y la fila se
@@ -315,6 +366,27 @@ sesión no vuelva a pisarlas.
   decimales, para cajas muy estrechas como las celdas del calendario del Journal;
   sustituyó a un `formatMoneyCompact` sin divisa el 2 de septiembre de 2026 porque el
   usuario pidió ver también el importe con signo ahí, no solo la cifra).
+  **Hay un cuarto desde el 8 de septiembre**, `formatAmountCompactSigned`: el mismo
+  compacto con signo pero **sin divisa y sin separador de miles**, solo para la celda del
+  calendario en un teléfono, donde no queda ancho que negociar. Lo de quitar el separador
+  va **a propósito y en contra de la regla de más abajo**, que existe para evitar la
+  *mezcla* (unos con punto y otros sin él); aquí no se agrupa nunca, así que no hay mezcla,
+  y gana un dígito entero de sitio: "−1.250" pide 38px de los 39 útiles y "−1250" pide 32,
+  que es lo que hace entrar hasta cinco cifras. `CapitalCurve` tiene su equivalente para
+  fechas, `formatTinyDate` ("7/3" en vez de "07 mar").
+- **Cuando un texto necesita dos formatos según el ancho, emítelos los dos y que elija el
+  `@media`.** Es lo que hacen la celda del calendario y el eje de fechas: dos `<span>`, uno
+  con `display: none`. Un `useMediaQuery` también valdría —esta app es solo cliente, así
+  que `matchMedia` ya acierta en la primera pintura y no habría parpadeo—, pero partiría el
+  breakpoint entre el CSS y el JS, y el 560 vive hoy solo en la hoja de estilos, que es
+  donde alguien lo va a buscar el día que lo mueva.
+- **Antes de decidir que algo "no cabe", mide el texto real, no uno parecido.** La cuenta
+  del calendario se hizo primero con un `canvas.measureText` sobre `"-1.250"` con guion
+  ASCII y daba 33px, dentro de los 35 disponibles; en pantalla seguía recortando, porque
+  `Intl` no escribe un guion sino el signo menos tipográfico (U+2212), que es tan ancho
+  como un dígito. Tres píxeles de diferencia y la conclusión al revés. Lo fiable es un
+  `Range` sobre el nodo ya pintado, comparando `scrollWidth` con `clientWidth` — y ojo, en
+  elementos `inline` esos dos valen 0, hay que medir el bloque que los contiene.
 - **Un empate de especificidad CSS lo gana quien aparece después en el archivo, no
   quien "debería" mandar por el `@media`.** Una regla `@media (min-width: 1560px)`
   con el mismo selector y especificidad que una regla base incondicional, puesta
@@ -450,11 +522,46 @@ inventes sombras nuevas) y viven en `web/src/components/`.
   desplazamiento suave y sale medio en blanco, y para probar el tema oscuro hay que
   sembrar `localStorage` navegando primero al mismo origen, porque el tema se decide en
   el script de arranque del `<head>`.
+  **Volvió a pasar el 8 de septiembre de 2026 y el CDP fue otra vez la salida buena**, con
+  dos apuntes nuevos. Uno: con el panel oculto **el JavaScript sí funciona** aunque las
+  capturas salgan en blanco, así que `javascript_tool` sigue sirviendo para medir el DOM y
+  solo hay que irse fuera para *ver*. Dos: la extensión de Chrome puede no estar conectada,
+  así que no cuentes con ella como plan B — el plan B es el script. Con él se puede además
+  recorrer la app entera sola (pulsando `.nav-group button` por su texto) y auditar las
+  siete pantallas de una pasada, que es como salieron casi todos los fallos de móvil.
+- **Al auditar por script, distingue el desborde real del que tú mismo has provocado.** Un
+  pseudoelemento transparente que agranda una zona de pulsación infla el `scrollWidth` de
+  su botón y el de todos sus contenedores, así que un chequeo ingenuo de
+  `scrollWidth > clientWidth` lo denuncia como rotura y te manda a "arreglar" algo que está
+  bien. Lo que importa de verdad es más estrecho: elementos cuyo `getBoundingClientRect`
+  se sale de la **ventana**, y nodos de texto con `text-overflow: ellipsis` que de verdad
+  recortan. Con ese criterio salieron 72 combinaciones limpias y ni un falso positivo.
+  Cuidado también con el contrario: un `scrollWidth` mayor puede ser un **sangrado
+  deliberado** (`.journal-errors-legend li` lleva padding con margen negativo para que el
+  hover llegue a los bordes, igual que `.topbar`). Comprueba de dónde sale antes de tocar
+  nada: en esa sesión llegué a escribir un "arreglo" con su comentario explicando un
+  problema que no existía, y hubo que deshacerlo.
+- **El heredoc de Bash de esta herramienta se come las barras invertidas.** Un
+  `cat > x.mjs <<'EOF'` con `\n`, `\s+` o `C:\\ruta` dentro llega al fichero como `n`, `s+`
+  y `C:\ruta`, sin avisar. Costó tres rondas: un `spawn` de Chrome con la ruta rota, un
+  `split(/s+/)` que partía los nombres de clase por la letra "s" y un `String.replace` que
+  no encontraba nada. Para escribir scripts o cualquier cosa con escapes, usa la
+  herramienta `Write`; el heredoc, solo para texto plano (los mensajes de commit van bien).
 - Los commits van agrupados por qué cuentan, no por orden cronológico — cuando el
   trabajo mezcla features distintas en los mismos archivos, merece la pena separar por
   parche antes de comitear (`git apply --cached` con un patch recortado a mano) en vez
   de meterlo todo junto. Cada commit debe compilar por sí solo (`pnpm typecheck` antes
   de comitear, no solo al final).
+  **Para repartos grandes hay algo mejor que recortar parches a mano**, y la pasada de
+  móvil (380 líneas de `styles.css` en 8 historias) lo pedía: un script que parsea el
+  unified diff y **reconstruye el fichero** eligiendo qué cambios entran, en vez de
+  aplicar trozos con `git apply`. No hay desplazamientos ni fuzz entre pasos, y sobre todo
+  se puede comprobar antes de tocar nada que aplicando **todos** los grupos sale el fichero
+  final byte a byte — o sea, que el reparto no pierde ni traspapela ningún cambio. Después,
+  para verificar de verdad "cada commit compila por sí solo": `git checkout <sha> -- web/src`
+  en bucle sobre todos los commits, `pnpm typecheck` en cada uno y `git checkout HEAD --
+  web/src` al final. Barato y es la única forma de saberlo, porque hacer typecheck con el
+  árbol de trabajo entero no dice nada de los intermedios.
 - git: local manda sobre origin, push normal sin `--force` salvo que se pida explícito.
 - Antes de tocar el precio, la copia legal o cualquier texto contractual: es
   `web/public/legal.html` (se movió ahí al pasar el despliegue a Vite; se sirve igual en
