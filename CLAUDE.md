@@ -295,11 +295,15 @@ verdad en el bundle (o sea, no salió en modo demo) y los `.sql` ya devolviendo 
 dos Edge Functions de Stripe se redesplegaron después, con las URLs de retorno apuntando
 ya a `/app`, y responden correctamente.
 
-Lo único que no se ha podido probar sin gastar dinero es **un checkout de verdad de punta
-a punta**: que Stripe devuelve a `/app?checkout=success` y que el paywall se levanta solo.
-La lógica está puesta (`entryParams.ts` lee el parámetro y `useSubscription` reintenta la
-lectura a los 1,2 y 4 segundos, porque la fila la escribe el webhook y Stripe no lo
-espera), pero conviene mirarlo la próxima vez que alguien pague.
+Lo único que no se ha podido probar sin gastar dinero es **la vuelta de Stripe dentro de
+React**: que devuelve a `/app?checkout=success` y que el paywall se levanta solo. La lógica
+está puesta (`entryParams.ts` lee el parámetro y `useSubscription` reintenta la lectura a
+los 1,2 y 4 segundos, porque la fila la escribe el webhook y Stripe no lo espera), pero
+conviene mirarlo la próxima vez que alguien pague.
+
+Ojo con la mitad que sí está probada, para no confundirlas: **el webhook funcionó de punta
+a punta en agosto, pero sobre el legado** (ver justo abajo). Lo que estrenó el corte a
+React es la vuelta al navegador, no la escritura de la fila.
 
 **El código de cobro sí está revisado entero, el 8 de septiembre de 2026, y está bien.**
 Conviene saberlo para no volver a sospechar de él: `create-checkout-session` fija
@@ -310,19 +314,29 @@ variante correcta en Deno, y `getCurrentPeriodEnd` lee el campo en las dos forma
 tenido en la API de Stripe. Y que los dos usuarios que abrieron el checkout tengan
 `stripe_customer_id` escrito demuestra que esa mitad corre de verdad en producción.
 
-Lo que **no** se puede ver desde el código son tres cosas del panel de Stripe, y son justo
-las que solo se manifiestan con un pago completado:
+**Y el webhook está probado de punta a punta en producción**, aunque no lo parezca al mirar
+la tabla y no ver ni una suscripción activa. La prueba está en los datos, y conviene saber
+leerla para no volver a dudar de lo mismo:
 
-1. Que el endpoint esté dado de alta y suscrito a los cinco eventos.
-2. Que `STRIPE_WEBHOOK_SIGNING_SECRET` sea el secreto **de ese endpoint concreto**. Si
-   quedó el de otro o el de un `stripe listen` de pruebas, cada evento muere en un 400 y la
-   fila nunca se actualiza. (Que *exista* sí está comprobado: una llamada sin firma
-   responde "Missing stripe-signature header" y no "not configured".)
-3. Que `SITE_URL` no acabe en barra, o las URLs de retorno salen con `//app`.
+`price_id` y `current_period_end` los escribe **un solo sitio en todo el sistema**:
+`upsertPaidSubscription`, dentro del webhook. El SQL se limita a declarar las columnas y
+ninguna otra función las toca — `create-checkout-session` solo escribe
+`stripe_customer_id`. Pues el usuario `3bc74b` tiene las dos puestas, con un
+`current_period_end` exactamente un mes posterior a su alta y un `updated_at` del **6 de
+agosto de 2026 a las 14:13**. Eso es un periodo mensual escrito por el handler: ese día
+Stripe entregó un evento firmado, la firma se validó y la fila se escribió. De ahí salen
+dos cosas que **no hace falta volver a comprobar**: el endpoint está dado de alta y
+suscrito a los eventos, y `STRIPE_WEBHOOK_SIGNING_SECRET` es el del endpoint bueno. Es la
+suscripción de prueba del 6,99 que menciona la sección de monetización; después se pasó a
+`lifetime` y se le limpiaron los ids de Stripe, pero el rastro del webhook se quedó ahí.
 
-Se zanjan gratis desde Stripe → Developers → Webhooks → **Send test webhook**: un 200
-prueba el cableado, y el historial de entregas de esa misma pantalla dice si alguna vez ha
-llegado algo.
+Queda suelto un solo detalle, y es menor: que `SITE_URL` no acabe en barra, o las URLs de
+retorno salen con `//app`.
+
+Si algún día hace falta reconfirmar el cableado —porque se toque el endpoint o se rote el
+secreto— se hace gratis desde Stripe → Developers → Webhooks → **Send test webhook**: un
+200 lo prueba, y el historial de entregas de esa pantalla dice qué ha llegado. Pero no es
+un pendiente: nada indica que se haya movido nada desde agosto.
 
 ### Por qué nadie ha pagado todavía (medido el 8 de septiembre de 2026)
 
