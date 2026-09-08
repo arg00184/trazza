@@ -68,6 +68,12 @@ la rama `unconfigured`, que ya pinta el `AppShell` entero con los datos de `lib/
 los dos pueden convivir. Si algún día se cambia cómo se decide el modo demo, esto es lo
 primero que deja de funcionar.
 
+Su límite: **en demo no hay usuario, así que todo lo que dependa de la sesión no se pinta**
+— `useSubscription` se queda en `undefined` y `SubscriptionNotice` no aparece por mucho que
+lo busques. Para revisar ese tipo de componente hay que inyectar su marcado contra la hoja
+de estilos viva (lo que verifica el CSS y la disposición, no el JSX) o entrar con una
+cuenta real y tocarle el `trial_ends_at`.
+
 Las dos comparten las mismas tablas de Supabase (`firms`, `accounts`, `transactions`,
 `journal_entries`, `journal_error_types`, `subscriptions`). Sigue importando para
 cualquier cambio de esquema: el legado archivado no se rompe solo porque no se sirva, y
@@ -234,6 +240,44 @@ Se verificó midiendo, no mirando: las **48 combinaciones** de 6 vistas × claro
 es/en × 375 y 414px, sin un elemento fuera de la ventana ni un texto truncado con elipsis.
 Y los diez commits pasan `pnpm typecheck` por separado, comprobado uno a uno.
 
+**El aviso de suscripción**, el **8 de septiembre de 2026**. `SubscriptionNotice.tsx` se
+pinta sobre el contenido en las tres situaciones que lo piden: prueba caducada o
+suscripción cancelada (con texto distinto para cada una — decirle "tu prueba ha terminado"
+a alguien que canceló suena a que la app no sabe con quién habla), pago fallido, que manda
+al portal de facturación y no al selector de planes porque ahí el arreglo es la tarjeta, y
+prueba a punto de acabar, a tres días o menos.
+
+Existe porque **el paywall era invisible hasta que chocabas con él**: `guard()` en
+`App.tsx` abre `PlansModal` al intentar guardar algo, así que quien volvía con la prueba
+caducada, miraba sus datos y se iba, no llegaba a enterarse de que había algo que pagar ni
+de por qué no podía editar. El aviso de "quedan X días" tapa el otro hueco: `trialDaysLeft`
+estaba calculado desde el principio pero solo se pintaba entrando en Ajustes, de modo que
+la prueba se acababa sin que nadie lo hubiera dicho.
+
+No bloquea nada —el solo-lectura sigue siendo igual de generoso, solo deja de ser
+invisible— y mantiene el fail-open: con el estado sin resolver o con la carga fallida no se
+muestra nada, porque ahí `canMutateData` deja escribir y anunciar un bloqueo sería mentir.
+Va por encima de los avisos de sincronización, porque el de carga sale en cada arranque y
+empujaría hacia abajo justo lo que se quiere que se lea. Comparte métrica exacta con
+`.state-notice` (12/16 de padding, gap 12, margen inferior 16): los dos se pintan en el
+mismo sitio y pueden verse apilados, y si no midieran igual se leerían como dos componentes
+distintos en vez de como dos avisos.
+
+**El webhook de Stripe dejó de poder perder un cobro en silencio**, el mismo día.
+`upsertPaidSubscription` se llamaba "upsert" pero hacía `.update()`, que no distingue
+"actualizada" de "no había fila que actualizar": un usuario sin fila en `subscriptions`
+pagaba, se afectaban cero filas, Stripe recibía un 200 y la persona se quedaba con el
+paywall puesto sin que constara un error en ninguna parte. Ahora es un `upsert` de verdad
+(la PK es `user_id`, así que el conflicto se resuelve solo) y **la escritura fallida se
+propaga**, para que el handler devuelva 500 y Stripe reintente: `supabase-js` no lanza,
+devuelve `{ error }`, y tragárselo era contestar 200 a un cobro no registrado, que Stripe
+ya no repite. Desplegado como v16.
+
+Los otros dos escritores del webhook (`customer.subscription.deleted` e
+`invoice.payment_failed`) siguen sin comprobar el error **a propósito**: quitan acceso en
+vez de darlo, así que un fallo ahí deja a alguien con acceso de más, mucho menos grave que
+dejar fuera a quien ha pagado. Si algún día se tocan, ese es el criterio.
+
 ## Qué queda
 
 **Del plan original no queda nada abierto**, y a 26 de agosto de 2026 tampoco quedan
@@ -256,6 +300,63 @@ a punta**: que Stripe devuelve a `/app?checkout=success` y que el paywall se lev
 La lógica está puesta (`entryParams.ts` lee el parámetro y `useSubscription` reintenta la
 lectura a los 1,2 y 4 segundos, porque la fila la escribe el webhook y Stripe no lo
 espera), pero conviene mirarlo la próxima vez que alguien pague.
+
+**El código de cobro sí está revisado entero, el 8 de septiembre de 2026, y está bien.**
+Conviene saberlo para no volver a sospechar de él: `create-checkout-session` fija
+`client_reference_id` **y** `subscription_data.metadata.supabase_user_id` **y** persiste el
+`stripe_customer_id` antes de redirigir, así que el webhook tiene tres caminos
+independientes para saber de quién es el pago. Usa `constructEventAsync`, que es la
+variante correcta en Deno, y `getCurrentPeriodEnd` lee el campo en las dos formas que ha
+tenido en la API de Stripe. Y que los dos usuarios que abrieron el checkout tengan
+`stripe_customer_id` escrito demuestra que esa mitad corre de verdad en producción.
+
+Lo que **no** se puede ver desde el código son tres cosas del panel de Stripe, y son justo
+las que solo se manifiestan con un pago completado:
+
+1. Que el endpoint esté dado de alta y suscrito a los cinco eventos.
+2. Que `STRIPE_WEBHOOK_SIGNING_SECRET` sea el secreto **de ese endpoint concreto**. Si
+   quedó el de otro o el de un `stripe listen` de pruebas, cada evento muere en un 400 y la
+   fila nunca se actualiza. (Que *exista* sí está comprobado: una llamada sin firma
+   responde "Missing stripe-signature header" y no "not configured".)
+3. Que `SITE_URL` no acabe en barra, o las URLs de retorno salen con `//app`.
+
+Se zanjan gratis desde Stripe → Developers → Webhooks → **Send test webhook**: un 200
+prueba el cableado, y el historial de entregas de esa misma pantalla dice si alguna vez ha
+llegado algo.
+
+### Por qué nadie ha pagado todavía (medido el 8 de septiembre de 2026)
+
+Esto está aquí porque la lectura intuitiva es errónea y cuesta una sesión entera
+redescubrirlo. **No es que la gente se haya negado a pagar: es que casi a nadie se le ha
+pedido.** 39 de los 54 usuarios tenían el trial vivo hasta el **5 de septiembre**, o sea
+que el muro llevaba dos días puesto para la mayoría.
+
+Los números que importan, sacados de Supabase:
+
+- 54 registrados, de los cuales **9 son `lifetime`** y nunca pueden pagar → base real 45.
+- 5 nunca confirmaron el email ni entraron.
+- Solo **19** llegaron a crear una cuenta o empresa; 13 tienen ≥10 registros.
+- **2 inicios de sesión en los últimos 7 días.** Ese es el número de verdad.
+- Un solo usuario real ha abierto el checkout (7 de agosto) y no lo terminó — y es uno de
+  los más enganchados de todos.
+- **Tres semanas seguidas con cero altas** (17, 24 y 31 de agosto). El pico fue la semana
+  del 13 de julio, con 11.
+
+Cruzando las tres cosas, el muro del 5 de septiembre cayó sobre **unas 4 personas
+realmente activas**. Que 0 de 4 paguen en dos días es aritmética, no una señal sobre el
+producto: para esperar la primera venta hacen falta del orden de 30-50 personas enganchadas
+llegando al paywall.
+
+Dos consecuencias prácticas. Una: **el precio no es la restricción** y bajarlo otra vez no
+arreglaría nada — la bajada de 6,99 a 4,99 se hizo sin evidencia, porque en ese momento aún
+no se le había pedido pagar a nadie. Dos: **la retención va antes que la difusión**. De 54
+registrados, 35 no crearon ni un solo registro; meter tráfico por ese embudo quema la
+audiencia sin cambiar el resultado.
+
+Ojo también con `subscriptions.created_at`: **no es la fecha de alta**. 48 de las 54 filas
+se crearon el 5 de agosto de 2026 de una tirada, que es cuando se pobló la tabla. La fecha
+de alta real está en `auth.users.created_at`, y se nota porque hay usuarios cuya última
+actividad es *anterior* a su `created_at` en `subscriptions`.
 
 Los cabos de CSS que hubo aquí sí están todos cerrados a 26 de agosto de 2026: las tres
 reglas `.workspace` duplicadas se consolidaron en una (con cuidado: el `min-width: 0`
@@ -414,6 +515,19 @@ sesión no vuelva a pisarlas.
   derrama fuera — así que recorta el propio difuminado y devuelve un paralelogramo de
   bordes duros, que es exactamente lo que se quería evitar. Con desenfoques grandes, la
   geometría manda; la máscara no.
+- **Al redesplegar `stripe-webhook` hay que pasar `verify_jwt: false` explícitamente.**
+  Es la única de las cuatro Edge Functions que lo lleva desactivado, porque Stripe la llama
+  directamente y no manda ningún JWT — la autenticidad la da la firma. Tanto el MCP de
+  Supabase como el CLI **asumen `true` por defecto**, así que un redespliegue distraído
+  deja el webhook rechazando todos los eventos con un 401 antes siquiera de entrar en el
+  handler. Y no lo notarías: solo se rompe cuando alguien paga. Después de desplegarla,
+  una llamada sin firma tiene que devolver **400 "Missing stripe-signature header"**; si
+  devuelve 401, es esto.
+- **Un panel de navegador oculto no es solo un problema de capturas: `innerWidth` vale 0**,
+  y con eso toda la geometría miente en silencio (`getBoundingClientRect` devuelve ceros
+  que parecen medidas). El color computado sí sigue siendo fiable, así que para comprobar
+  pares de tema vale igual; para cualquier cosa de disposición, no. `tabs_context` dice si
+  el panel está oculto — mirarlo antes ahorra la ronda entera.
 
 ## El sistema de diseño — léelo antes de tocar `styles.css`
 
