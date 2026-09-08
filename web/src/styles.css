@@ -2658,6 +2658,90 @@ button {
   line-height: var(--leading-normal);
 }
 
+/* Aviso de suscripcion. Vive en el workspace, no en Ajustes, pero se queda aqui con el
+   resto de lo de suscripcion porque es donde se busca.
+   Comparte metrica exacta con .state-notice (mismo padding, mismo gap, mismo margen
+   inferior, misma sombra) a proposito: los dos se pintan en el mismo sitio y pueden
+   verse apilados, y si no midieran igual se leerian como dos componentes distintos en
+   vez de como dos avisos.
+   Los tonos salen solo de tokens que ya estan en los dos temas (--negative,
+   --negative-soft, --warning, --surface), asi que este bloque no necesita su pareja en
+   :root[data-theme="dark"]. Si algun dia se le mete un color a pelo, si la necesitara. */
+.subscription-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-base) var(--space-lg);
+  background: var(--surface);
+  box-shadow: 0 12px 34px rgba(17, 24, 39, 0.05);
+}
+
+.subscription-notice > svg {
+  flex-shrink: 0;
+}
+
+/* flex + min-width:0 para que un texto largo se reparta en varias lineas en vez de
+   empujar al boton fuera de la caja. */
+.subscription-notice > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.subscription-notice strong {
+  display: block;
+  color: var(--text);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.subscription-notice p {
+  margin: var(--space-3xs) 0 0;
+  color: var(--strong-muted);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+.subscription-notice-cta {
+  flex-shrink: 0;
+}
+
+.subscription-notice.is-expired,
+.subscription-notice.is-pastdue {
+  border-color: color-mix(in srgb, var(--negative) 26%, transparent);
+  background: var(--negative-soft);
+}
+
+.subscription-notice.is-expired > svg,
+.subscription-notice.is-pastdue > svg {
+  color: var(--negative);
+}
+
+.subscription-notice.is-ending {
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  background: color-mix(in srgb, var(--warning) 9%, var(--surface));
+}
+
+.subscription-notice.is-ending > svg {
+  color: var(--warning);
+}
+
+@media (max-width: 560px) {
+  /* El boton baja a su propia linea entera. Con el texto a flex:1 el wrap cae justo ahi,
+     asi que no hace falta reordenar nada. */
+  .subscription-notice {
+    flex-wrap: wrap;
+  }
+
+  .subscription-notice-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 560px) {
   .plans-grid {
     grid-template-columns: 1fr;

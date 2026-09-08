@@ -9,6 +9,7 @@ import { JournalEntriesView } from "./components/JournalEntriesView";
 import { MovementsView } from "./components/MovementsView";
 import { PlansModal } from "./components/PlansModal";
 import { SettingsView } from "./components/SettingsView";
+import { SubscriptionNotice } from "./components/SubscriptionNotice";
 import { Wordmark } from "./components/Wordmark";
 import { useAuth } from "./hooks/useAuth";
 import { useSubscription } from "./hooks/useSubscription";
@@ -187,6 +188,11 @@ export default function App() {
       onThemeToggle={() => themeState.setTheme(themeState.theme === "dark" ? "light" : "dark")}
       onViewChange={setActiveView}
     >
+      {/* Antes que los avisos de sincronizacion: el de carga aparece en cada arranque y
+          empujaria hacia abajo justo lo que se quiere que se lea. Ademas explica por que
+          no se puede editar, que es la duda que llega primero. */}
+      <SubscriptionNotice onViewPlans={() => setPlansOpen(true)} subscription={subscription} />
+
       {auth.status === "unconfigured" && (
         <StateNotice
           tone="info"
