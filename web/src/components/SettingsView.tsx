@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Copy, Download, FileDown, FileUp, Languages, LifeBuoy, Moon, Save, Sun, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Copy, Download, FileDown, FileUp, Languages, Moon, Save, Sun, Trash2 } from "lucide-react";
 import {
   findLocalMigrationSource,
   hasImportData,
@@ -21,9 +21,10 @@ const currencyOptions = [
   { label: "USD", value: "USD" },
 ];
 
-/* Mismo correo que legal.html. Se ensena tal cual ademas del boton mailto porque en
-   escritorio es habitual no tener cliente de correo configurado y ahi el mailto no hace
-   nada (sin error): con la direccion a la vista y un boton de copiar siempre hay salida. */
+/* Mismo correo que legal.html. Se ensena la direccion tal cual con un boton de copiar y
+   nada mas: el enlace mailto se quito el 9 de septiembre de 2026 porque en escritorio es
+   habitual no tener cliente de correo configurado y ahi no hace nada (sin error), que es
+   peor que no ofrecerlo. */
 const SUPPORT_EMAIL = "alexrgsbj@gmail.com";
 
 type SettingsViewProps = {
@@ -83,31 +84,6 @@ export function SettingsView({
   useEffect(() => {
     setLocalMigrationSource(findLocalMigrationSource());
   }, []);
-
-  /* Contacto por mailto, sin backend (ver la decision del 9 de septiembre de 2026). El
-     cuerpo lleva un pie con id, email, plan, idioma y user agent para poder situar la
-     incidencia sin tener que pedir mas datos. encodeURIComponent y no URLSearchParams:
-     este ultimo escribe "+" por espacio y varios clientes de correo no lo deshacen dentro
-     del cuerpo de un mailto. */
-  const supportHref = useMemo(() => {
-    const diagnostics = [
-      `id: ${profile?.id ?? "—"}`,
-      `email: ${profile?.email ?? "—"}`,
-      `plan: ${subscription.subscription?.status ?? "—"}`,
-      `lang: ${language}`,
-      `app: ${typeof navigator === "undefined" ? "—" : navigator.userAgent}`,
-    ];
-    const body = [
-      t("settings.support.mailIntro"),
-      "",
-      "",
-      "",
-      `— ${t("settings.support.mailDiagnosticsNote")} —`,
-      ...diagnostics,
-    ].join("\n");
-    const query = `subject=${encodeURIComponent(t("settings.support.mailSubject"))}&body=${encodeURIComponent(body)}`;
-    return `mailto:${SUPPORT_EMAIL}?${query}`;
-  }, [language, profile, subscription.subscription?.status, t]);
 
   const copySupportEmail = async () => {
     try {
@@ -252,18 +228,11 @@ export function SettingsView({
           </div>
         </div>
         <div className="settings-support">
-          <a className="secondary-action" href={supportHref}>
-            <LifeBuoy size={17} strokeWidth={2.2} />
-            {t("settings.support.button")}
-          </a>
-          <p className="settings-support-fallback">
-            {t("settings.support.orWrite")}{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
-            <button className="link-button" onClick={copySupportEmail} type="button">
-              {supportEmailCopied ? <Check size={14} strokeWidth={2.6} /> : <Copy size={14} strokeWidth={2.2} />}
-              {supportEmailCopied ? t("settings.support.copied") : t("settings.support.copy")}
-            </button>
-          </p>
+          <span className="settings-support-email">{SUPPORT_EMAIL}</span>
+          <button className="secondary-action" onClick={copySupportEmail} type="button">
+            {supportEmailCopied ? <Check size={16} strokeWidth={2.6} /> : <Copy size={16} strokeWidth={2.2} />}
+            {supportEmailCopied ? t("settings.support.copied") : t("settings.support.copy")}
+          </button>
         </div>
       </section>
 
