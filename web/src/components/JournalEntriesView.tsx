@@ -46,6 +46,7 @@ import { useJournalDashboardLayout, type JournalWidgetId } from "../hooks/useJou
 import { useI18n, useT } from "../lib/i18n/context";
 import type { Language } from "../lib/i18n/context";
 import {
+  formatAmountCompactSigned,
   formatMoney,
   formatMoneyCompactSigned,
   formatPercent,
@@ -916,12 +917,25 @@ export function JournalEntriesView({
                   Number(day.date.slice(-2))
                 )}
               </span>
+              {/* Dos veces el mismo importe, en dos formatos, y el @media enseña uno: con
+                  divisa mientras quepa, sin ella en el telefono (ver el comentario de
+                  formatAmountCompactSigned). Emitirlos los dos y elegir en CSS evita el
+                  parpadeo con el formato equivocado que daria decidirlo en JS. */}
               <strong>
-                {day.count
-                  ? formatMoneyCompactSigned(day.pnl, currency)
-                  : day.payoutCount
-                    ? formatMoneyCompactSigned(-day.payoutGross, currency)
-                    : "-"}
+                <span className="journal-day-amount">
+                  {day.count
+                    ? formatMoneyCompactSigned(day.pnl, currency)
+                    : day.payoutCount
+                      ? formatMoneyCompactSigned(-day.payoutGross, currency)
+                      : "-"}
+                </span>
+                <span className="journal-day-amount is-tight">
+                  {day.count
+                    ? formatAmountCompactSigned(day.pnl)
+                    : day.payoutCount
+                      ? formatAmountCompactSigned(-day.payoutGross)
+                      : "-"}
+                </span>
               </strong>
               <small>
                 {day.count ? `${day.count} ${t("journal.calendar.opsSuffix")}` : ""}

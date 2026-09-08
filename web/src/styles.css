@@ -4736,6 +4736,12 @@ button {
   text-align: left;
 }
 
+/* De los dos importes que emite la celda (ver el comentario del TSX), el de ancho normal
+   es el que lleva divisa; el estrecho solo aparece en el @media de movil. */
+.journal-day-amount.is-tight {
+  display: none;
+}
+
 .journal-day:disabled {
   cursor: default;
 }
@@ -7726,13 +7732,75 @@ tbody tr:last-child td {
     flex-wrap: wrap;
   }
 
+  /* CALENDARIO EN MOVIL
+     La rejilla eran 8 columnas fijas (7 dias + SEMANA) tambien aqui, y a 375px no hay
+     sitio: la columna de semana se salia de la pantalla y los dias quedaban en 36px, con
+     lo que los numeros de dos cifras se truncaban con elipsis — "1.." podia ser del 10 al
+     19. Un dato a medias que parece un dato es peor que no enseñarlo, la misma regla que
+     obligo a inventar formatAmount para los importes.
+     La salida no es quitar la semana (se recupero a proposito, y con ella el total del
+     mes): es sacarla de la rejilla y darle la fila entera debajo de sus siete dias. El
+     marcado ya los emite en ese orden dentro de un Fragment por semana, asi que basta con
+     que ocupe de borde a borde — cero cambios en el TSX. Las siete columnas pasan de 36 a
+     ~41px y el numero cabe entero. */
   .journal-calendar-grid {
-    gap: var(--space-xs);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-2xs);
   }
 
+  .journal-weekday.is-week {
+    display: none;
+  }
+
+  .journal-week-summary {
+    grid-column: 1 / -1;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  /* La rejilla se sale del padding del panel a los dos lados. Es el unico sitio de la app
+     donde hace falta: 48px de padding sobre 341 son el 14% del ancho, y aqui ese 14% es la
+     diferencia entre que el importe del dia quepa (37px utiles por celda) o no (28). El
+     margen negativo va con la misma variable que el padding que cancela, por lo mismo que
+     .topbar (ver su comentario): si un numero cancela a otro, tienen que ser el mismo. */
+  .journal-calendar-panel {
+    --journal-calendar-bleed: var(--space-4xl);
+  }
+
+  .journal-calendar-grid {
+    margin: 0 calc(-1 * var(--journal-calendar-bleed));
+  }
+
+  /* 2px de lado, uno de los pocos valores a mano de la hoja y deliberado: la separacion
+     entre celdas ya la da el gap de la rejilla, asi que este padding solo esta reservando
+     sitio contra el borde, y cada pixel que reserva se lo quita al importe. Bajarlo de 4
+     a 2 sube lo util de 35 a 39, que es lo que hace entrar el peor caso medido. */
   .journal-day {
     min-height: 76px;
-    padding: var(--space-sm);
+    padding: var(--space-2xs) 2px;
+  }
+
+  /* Cambio de formato, no de tamaño de letra: el de divisa se va y entra el estrecho. */
+  .journal-day-amount {
+    display: none;
+  }
+
+  .journal-day-amount.is-tight {
+    display: inline;
+  }
+
+  .journal-day strong {
+    font-size: var(--text-xs);
+  }
+
+  /* La cuenta de operaciones no cabe en 37px ("3 ops" pide 30 y compite con el importe),
+     y es lo unico de la celda que el color de fondo no cuenta ya: el signo lo dice el
+     tinte y el importe, y el detalle completo sigue a un toque. */
+  .journal-day small {
+    display: none;
   }
 
   .account-row {

@@ -160,6 +160,39 @@ export function formatMoneyCompactSigned(value: number, currency: Currency = "EU
   }).format(value);
 }
 
+/* Cuarto escalon, y el ultimo: el mismo compacto con signo pero sin divisa, solo para la
+   celda del calendario en un telefono. La razon es que ahi ya no hay ancho que negociar.
+   Medido a 375px con la rejilla a siete columnas y sin el padding del panel, la celda deja
+   37px utiles; a --text-xs, "-1.214" mide 33 y entra, pero "-1.214 $" mide 44 y no entra
+   en ningun tamaño de letra que siga siendo legible. Las opciones eran quitar el simbolo o
+   quitar el importe, y el importe es el dato.
+   Que se pueda quitar el simbolo aqui y no en formatMoneyCompactSigned no es incoherencia:
+   alli la celda podia ser la unica cosa en pantalla que hablara de dinero, mientras que en
+   movil el calendario lleva "TOTAL DEL MES 0,00 €" justo encima y una barra de resumen por
+   semana, las dos con divisa, a menos de una pantalla de distancia. El simbolo esta, solo
+   que dicho una vez.
+   No lo elige JS: la celda emite los dos textos y el @media enseña uno. Un useMediaQuery
+   funcionaria (esta app es solo cliente, asi que matchMedia ya acierta en la primera
+   pintura y no habria parpadeo), pero partiria el breakpoint en dos sitios: el 560 vive
+   hoy solo en la hoja de estilos, y ahi es donde alguien lo va a buscar el dia que lo
+   mueva. Mismo patron en el eje de fechas de CapitalCurve. */
+export function formatAmountCompactSigned(value: number) {
+  return new Intl.NumberFormat("es-ES", {
+    maximumFractionDigits: 0,
+    signDisplay: "exceptZero",
+    /* Sin separador de miles, y aqui SI a proposito. La regla de la casa es la contraria
+       —formatMoney fuerza useGrouping porque el español se lo salta en numeros de cuatro
+       cifras y una columna de importes quedaba con unos con punto y otros sin el— pero lo
+       que esa regla evita es la MEZCLA, y aqui no la hay: en esta caja no se agrupa nunca.
+       Lo que se gana es un digito entero de sitio. Medido a 375px, "−1.250" pide 38px
+       contra los 39 utiles de la celda, o sea al pelo, y un dia de cinco cifras ya no
+       entraba; sin el punto el mismo importe pide 32 y entran hasta las cinco cifras
+       ("−12500", 38). El signo menos de Intl (U+2212) es mas ancho que un guion, que es
+       justo lo que hacia fallar la cuenta hecha con "-". */
+    useGrouping: false,
+  }).format(value);
+}
+
 export function formatPercent(value: number) {
   return new Intl.NumberFormat("es-ES", {
     style: "percent",
