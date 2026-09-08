@@ -273,11 +273,6 @@
   background: rgba(255, 123, 98, 0.1);
 }
 
-:root[data-theme="dark"] .sidebar-nav button.active {
-  background: #eef3f5;
-  color: #101214;
-}
-
 html {
   min-height: 100%;
   background: var(--bg);
