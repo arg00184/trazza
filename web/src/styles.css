@@ -4924,8 +4924,12 @@ button {
    tenga mas peso visual que el importe (--text-sm). line-height 1 le quita la holgura
    vertical y lo hace leer mas alto y limpio; el letter-spacing negativo y tabular-nums
    lo estrechan un poco y le dan un digito de ancho fijo — mas moderno y alineado en
-   rejilla. En movil baja a --text-md (bloque @media 820) porque la celda encoge. */
-.journal-day span {
+   rejilla. En movil baja a --text-md (bloque @media 820) porque la celda encoge.
+   > span y no "span" a secas: el importe es <strong><span class="journal-day-amount">,
+   y un ".journal-day span" tambien lo pintaba de --muted por seleccion directa (que
+   gana a la herencia del color del <strong>), asi que el importe salia gris pese a su
+   regla de color. El combinador hijo deja fuera ese span anidado. */
+.journal-day > span {
   color: var(--muted);
   font-size: var(--text-lg);
   font-weight: var(--weight-black);
@@ -8005,7 +8009,7 @@ tbody tr:last-child td {
     display: inline;
   }
 
-  .journal-day span {
+  .journal-day > span {
     font-size: var(--text-md);
   }
 
