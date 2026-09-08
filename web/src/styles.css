@@ -4806,13 +4806,12 @@ button {
   gap: var(--space-xs);
   min-width: 0;
   min-height: 88px;
-  /* Hairline de 1px que se ve de verdad en todos los cuadrados, tambien los vacios:
-     var(--line-strong) (y un 42% de --strong-muted, que se probo antes) sobre un fondo
-     casi blanco no se distinguian. 55% de --strong-muted mezclado con --surface da un
-     gris medio solido (~#9f9fa3 en claro, ~#7e7e83 en oscuro) que perfila la celda sin
-     pesar. Mezcla con --surface y no con transparent porque en el panel oculto del
-     navegador color-mix con transparent no resolvia y complicaba verificarlo. */
-  border: 1px solid color-mix(in srgb, var(--strong-muted) 55%, var(--surface));
+  /* Hairline de 1px que perfila cada cuadrado, tambien los vacios. Historial: --line-strong
+     no se veia; 55% de --strong-muted se veia pero quedaba demasiado marcado; 33% da un
+     gris suave (~#c8c8cc en claro) que esta ahi sin pesar. Mezcla con --surface y no con
+     transparent porque con transparent color-mix no resolvia en el panel oculto del
+     navegador y complicaba verificarlo. */
+  border: 1px solid color-mix(in srgb, var(--strong-muted) 33%, var(--surface));
   border-radius: var(--radius-sm);
   /* --space-2xs (4) y no --space-md (12): al subir el gap de la rejilla (arriba) cada
      celda perdio ancho, y en este panel las celdas ya eran estrechas de por si (57px
@@ -4846,16 +4845,16 @@ button {
    rojo del dia se lean de un vistazo como en el calendario de referencia. Es un mix local
    y no un token nuevo a proposito — --positive-soft se usa en mas sitios (Panel, avisos)
    y ahi el tono suave es el correcto.
-   El borde va al acento pleno (var(--positive)/var(--negative), sin mezcla): contra el
-   relleno del 28% es un contorno de 1px claramente verde o rojo, no un matiz. Se probo
-   al 65% mezclado y seguia sin distinguirse; a 1px el color pleno no pesa. */
+   El borde va un escalon por encima del relleno (relleno 28%, borde 48% del acento
+   mezclado con --surface): se distingue como contorno mas oscuro sin ser el verde/rojo
+   pleno, que quedaba de rotulador. */
 .journal-day.positive {
-  border-color: var(--positive);
+  border-color: color-mix(in srgb, var(--positive) 48%, var(--surface));
   background: color-mix(in srgb, var(--positive) 28%, var(--surface));
 }
 
 .journal-day.negative {
-  border-color: var(--negative);
+  border-color: color-mix(in srgb, var(--negative) 48%, var(--surface));
   background: color-mix(in srgb, var(--negative) 28%, var(--surface));
 }
 
@@ -4865,12 +4864,12 @@ button {
    por defecto, sin tenirse. En claro si se veia porque .journal-day.positive/.negative
    solo compiten ahi con la base .journal-day sin tema (0,1,0), que si pierden. */
 :root[data-theme="dark"] .journal-day.positive {
-  border-color: var(--positive);
+  border-color: color-mix(in srgb, var(--positive) 48%, var(--surface));
   background: color-mix(in srgb, var(--positive) 30%, var(--surface));
 }
 
 :root[data-theme="dark"] .journal-day.negative {
-  border-color: var(--negative);
+  border-color: color-mix(in srgb, var(--negative) 48%, var(--surface));
   background: color-mix(in srgb, var(--negative) 30%, var(--surface));
 }
 
