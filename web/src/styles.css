@@ -3019,6 +3019,12 @@ button {
   transform: translateX(-50%);
 }
 
+/* De los dos formatos que emite cada marca del eje (ver CapitalCurve), el largo es el de
+   siempre; el de cifras solo aparece en el @media de movil. */
+.chart-date-label.is-tight {
+  display: none;
+}
+
 .chart-hover-card {
   pointer-events: none;
   position: absolute;
@@ -7650,6 +7656,29 @@ tbody tr:last-child td {
     grid-column: 2;
     justify-content: flex-start;
   }
+
+  /* Las fechas del eje van en absoluto y centradas sobre su punto (translateX(-50%)), asi
+     que la ultima se salia media etiqueta por la derecha y el marco la cortaba: "28 may"
+     se leia "28 ma". Anclar los extremos por su lado los mete dentro, pero por si solo no
+     valia — al correrlos medio ancho chocaban con sus vecinas, porque seis etiquetas de
+     "07 mar" ocupan los 289px justos. Por eso van las dos cosas: el formato corto de
+     CapitalCurve baja cada etiqueta a ~22px y hace sitio, y el anclaje evita el corte. */
+  .chart-date-label {
+    display: none;
+  }
+
+  .chart-date-label.is-tight {
+    display: inline;
+  }
+
+  .chart-date-axis > span:first-child {
+    transform: none;
+  }
+
+  .chart-date-axis > span:last-child {
+    transform: translateX(-100%);
+  }
+
 }
 
 @media (max-width: 560px) {

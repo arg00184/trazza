@@ -220,9 +220,15 @@ export function CapitalCurve({ points, currency, movements = [] }: CapitalCurveP
           ))}
         </div>
         <div className="chart-date-axis" aria-hidden="true">
+          {/* Dos formatos de la misma fecha, y el @media enseña uno. En movil el eje puede
+              traer seis marcas y "07 mar" pide 48px: seis son 288 sobre los 289 utiles, o
+              sea justo el ancho entero, con la ultima saliendose media etiqueta por la
+              derecha y el marco cortandola ("28 may" se leia "28 ma"). En numeros, "7/3"
+              pide 22 y las seis caben con sitio de sobra sin mover ni una posicion. */}
           {dateTicks.map((tick) => (
             <span key={`${tick.date}-${tick.x}`} style={{ left: `${(tick.x / width) * 100}%` }}>
-              {formatShortDate(tick.date, language)}
+              <span className="chart-date-label">{formatShortDate(tick.date, language)}</span>
+              <span className="chart-date-label is-tight">{formatTinyDate(tick.date, language)}</span>
             </span>
           ))}
         </div>
@@ -277,6 +283,15 @@ function formatShortDate(date: string, language: Language) {
   return new Intl.DateTimeFormat(language === "en" ? "en-US" : "es-ES", { day: "2-digit", month: "short" })
     .format(toLocalDate(date))
     .replace(".", "");
+}
+
+/* El escalon por debajo de formatShortDate, solo para el eje en movil: dia y mes en cifras
+   ("7/3"), sin el nombre abreviado del mes, que es lo que costaba el ancho. Respeta el
+   orden de cada idioma porque lo decide Intl, no una plantilla — en ingles sale "3/7". */
+function formatTinyDate(date: string, language: Language) {
+  return new Intl.DateTimeFormat(language === "en" ? "en-US" : "es-ES", { day: "numeric", month: "numeric" }).format(
+    toLocalDate(date),
+  );
 }
 
 function formatFullDate(date: string, language: Language) {
