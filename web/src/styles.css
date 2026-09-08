@@ -4806,7 +4806,9 @@ button {
   gap: var(--space-xs);
   min-width: 0;
   min-height: 88px;
-  border: 1px solid var(--line);
+  /* --line-strong y no --line: hairline de 1px pero que se ve en todos los cuadrados,
+     tambien los vacios, para que la rejilla quede perfilada como en el de referencia. */
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   /* --space-2xs (4) y no --space-md (12): al subir el gap de la rejilla (arriba) cada
      celda perdio ancho, y en este panel las celdas ya eran estrechas de por si (57px
@@ -4837,16 +4839,21 @@ button {
 }
 
 /* Fondo de celda mas intenso que --positive-soft/--negative-soft (que rondan un 13% de
-   acento): aqui se sube a ~20% mezclando el acento con --surface, para que el verde y el
+   acento): aqui se sube a ~28% mezclando el acento con --surface, para que el verde y el
    rojo del dia se lean de un vistazo como en el calendario de referencia. Es un mix local
    y no un token nuevo a proposito — --positive-soft se usa en mas sitios (Panel, avisos)
-   y ahi el tono suave es el correcto. */
+   y ahi el tono suave es el correcto.
+   El borde tira del mismo acento a mayor proporcion (~44%): asi cada cuadrado queda
+   perfilado con una linea finisima que se ve contra su propio relleno, cosa que
+   var(--line-strong) (gris neutro) no hacia sobre el verde/rojo. */
 .journal-day.positive {
-  background: color-mix(in srgb, var(--positive) 20%, var(--surface));
+  border-color: color-mix(in srgb, var(--positive) 44%, var(--surface));
+  background: color-mix(in srgb, var(--positive) 28%, var(--surface));
 }
 
 .journal-day.negative {
-  background: color-mix(in srgb, var(--negative) 20%, var(--surface));
+  border-color: color-mix(in srgb, var(--negative) 44%, var(--surface));
+  background: color-mix(in srgb, var(--negative) 28%, var(--surface));
 }
 
 /* El par de tema oscuro no es opcional aqui, mismo caso que el de mas arriba
@@ -4855,11 +4862,13 @@ button {
    por defecto, sin tenirse. En claro si se veia porque .journal-day.positive/.negative
    solo compiten ahi con la base .journal-day sin tema (0,1,0), que si pierden. */
 :root[data-theme="dark"] .journal-day.positive {
-  background: color-mix(in srgb, var(--positive) 22%, var(--surface));
+  border-color: color-mix(in srgb, var(--positive) 40%, var(--surface));
+  background: color-mix(in srgb, var(--positive) 30%, var(--surface));
 }
 
 :root[data-theme="dark"] .journal-day.negative {
-  background: color-mix(in srgb, var(--negative) 22%, var(--surface));
+  border-color: color-mix(in srgb, var(--negative) 40%, var(--surface));
+  background: color-mix(in srgb, var(--negative) 30%, var(--surface));
 }
 
 .journal-day.payout {
