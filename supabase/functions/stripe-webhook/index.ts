@@ -127,14 +127,29 @@ async function findUserIdByCustomer(customerId: string): Promise<string | null> 
 async function upsertPaidSubscription(userId: string, subscription: Stripe.Subscription) {
   const priceId = subscription.items.data[0]?.price?.id ?? null;
 
-  await adminClient
+  // upsert y no update, pese al nombre que la funcion tenia desde el principio: un update
+  // no distingue "actualizada" de "no habia fila que actualizar". Un usuario sin fila en
+  // subscriptions (el trigger de alta fallo, o la cuenta se creo por otra via) pagaba,
+  // afectaba a cero filas, Stripe recibia un 200 y la persona se quedaba con el paywall
+  // puesto sin que constara un error en ninguna parte. La PK de la tabla es user_id, asi
+  // que el conflicto se resuelve por ahi sin declararlo.
+  //
+  // trial_ends_at se queda fuera a proposito: en una fila que ya existe no hay que
+  // tocarlo, y en una que se crea aqui no significa nada, porque el acceso ya lo da
+  // status = active sin mirar la fecha.
+  const { error } = await adminClient
     .from("subscriptions")
-    .update({
+    .upsert({
+      user_id: userId,
       status: mapStripeStatus(subscription.status),
       stripe_customer_id: subscription.customer as string,
       stripe_subscription_id: subscription.id,
       price_id: priceId,
       current_period_end: getCurrentPeriodEnd(subscription),
-    })
-    .eq("user_id", userId);
+    });
+
+  // Si la escritura falla se propaga, para que el handler devuelva 500 y Stripe reintente
+  // el evento. supabase-js no lanza: devuelve { error }. Ignorarlo era contestar 200 a un
+  // cobro que no se llego a registrar, y lo que Stripe da por entregado no lo repite.
+  if (error) throw new Error(`No se pudo guardar la suscripcion de ${userId}: ${error.message}`);
 }
