@@ -10,7 +10,12 @@
     <!-- La app vive detras del login: indexarla no aporta nada y ademas competiria en
          Google con la landing, que es la pagina que si queremos que se encuentre. -->
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="icon" href="/trazza.png" type="image/png" />
+    <!-- Mismo juego de iconos que la landing, con rutas absolutas: los dos documentos se
+         sirven del mismo origen, así que `/favicon-*.png` resuelve igual desde `/app`. -->
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="icon" href="/favicon-96.png" sizes="96x96" type="image/png" />
+    <link rel="icon" href="/favicon-192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
