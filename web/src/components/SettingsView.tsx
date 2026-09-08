@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Download, FileDown, FileUp, Languages, Moon, Save, Sun, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Download, FileDown, FileUp, Languages, LifeBuoy, Moon, Save, Sun, Trash2 } from "lucide-react";
 import {
   findLocalMigrationSource,
   hasImportData,
@@ -77,6 +77,31 @@ export function SettingsView({
   useEffect(() => {
     setLocalMigrationSource(findLocalMigrationSource());
   }, []);
+
+  /* Contacto por mailto, sin backend (ver la decision del 9 de septiembre de 2026). El
+     cuerpo lleva un pie con id, email, plan, idioma y user agent para poder situar la
+     incidencia sin tener que pedir mas datos. encodeURIComponent y no URLSearchParams:
+     este ultimo escribe "+" por espacio y varios clientes de correo no lo deshacen dentro
+     del cuerpo de un mailto. */
+  const supportHref = useMemo(() => {
+    const diagnostics = [
+      `id: ${profile?.id ?? "—"}`,
+      `email: ${profile?.email ?? "—"}`,
+      `plan: ${subscription.subscription?.status ?? "—"}`,
+      `lang: ${language}`,
+      `app: ${typeof navigator === "undefined" ? "—" : navigator.userAgent}`,
+    ];
+    const body = [
+      t("settings.support.mailIntro"),
+      "",
+      "",
+      "",
+      `— ${t("settings.support.mailDiagnosticsNote")} —`,
+      ...diagnostics,
+    ].join("\n");
+    const query = `subject=${encodeURIComponent(t("settings.support.mailSubject"))}&body=${encodeURIComponent(body)}`;
+    return `mailto:alexrgsbj@gmail.com?${query}`;
+  }, [language, profile, subscription.subscription?.status, t]);
 
   const canImport = dataMode === "cloud" && !busy && !mutating;
 
@@ -199,6 +224,21 @@ export function SettingsView({
               {t("settings.language.en")}
             </button>
           </div>
+        </div>
+      </section>
+
+      <section className="panel settings-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>{t("settings.support.title")}</h2>
+            <p>{t("settings.support.subtitle")}</p>
+          </div>
+        </div>
+        <div className="settings-support">
+          <a className="secondary-action" href={supportHref}>
+            <LifeBuoy size={17} strokeWidth={2.2} />
+            {t("settings.support.button")}
+          </a>
         </div>
       </section>
 

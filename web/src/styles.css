@@ -7422,6 +7422,12 @@ tbody tr:last-child td {
   gap: var(--space-md);
 }
 
+/* El boton de soporte es un <a href="mailto:"> con la pinta de .secondary-action: sin
+   subrayado de enlace (la clase ya le pone su propio color, no hereda el azul). */
+.settings-support .secondary-action {
+  text-decoration: none;
+}
+
 .migration-status {
   display: grid;
   gap: var(--space-sm);
