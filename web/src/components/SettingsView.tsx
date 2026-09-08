@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Download, FileDown, FileUp, Languages, LifeBuoy, Moon, Save, Sun, Trash2 } from "lucide-react";
+import { Check, Copy, Download, FileDown, FileUp, Languages, LifeBuoy, Moon, Save, Sun, Trash2 } from "lucide-react";
 import {
   findLocalMigrationSource,
   hasImportData,
@@ -20,6 +20,11 @@ const currencyOptions = [
   { label: "EUR", value: "EUR" },
   { label: "USD", value: "USD" },
 ];
+
+/* Mismo correo que legal.html. Se ensena tal cual ademas del boton mailto porque en
+   escritorio es habitual no tener cliente de correo configurado y ahi el mailto no hace
+   nada (sin error): con la direccion a la vista y un boton de copiar siempre hay salida. */
+const SUPPORT_EMAIL = "alexrgsbj@gmail.com";
 
 type SettingsViewProps = {
   data: AppData;
@@ -62,6 +67,7 @@ export function SettingsView({
   });
   const [migrationMessage, setMigrationMessage] = useState<{ text: string; type: "error" | "info" | "success" } | null>(null);
   const [localMigrationSource, setLocalMigrationSource] = useState<LocalMigrationSource | null>(null);
+  const [supportEmailCopied, setSupportEmailCopied] = useState(false);
   const t = useT();
   const confirm = useConfirm();
   const { language, setLanguage } = useI18n();
@@ -100,8 +106,19 @@ export function SettingsView({
       ...diagnostics,
     ].join("\n");
     const query = `subject=${encodeURIComponent(t("settings.support.mailSubject"))}&body=${encodeURIComponent(body)}`;
-    return `mailto:alexrgsbj@gmail.com?${query}`;
+    return `mailto:${SUPPORT_EMAIL}?${query}`;
   }, [language, profile, subscription.subscription?.status, t]);
+
+  const copySupportEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(SUPPORT_EMAIL);
+      setSupportEmailCopied(true);
+      window.setTimeout(() => setSupportEmailCopied(false), 2000);
+    } catch {
+      /* Contexto inseguro o permiso denegado: la direccion sigue visible y seleccionable
+         a mano, asi que no hace falta avisar de nada. */
+    }
+  };
 
   const canImport = dataMode === "cloud" && !busy && !mutating;
 
@@ -239,6 +256,14 @@ export function SettingsView({
             <LifeBuoy size={17} strokeWidth={2.2} />
             {t("settings.support.button")}
           </a>
+          <p className="settings-support-fallback">
+            {t("settings.support.orWrite")}{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+            <button className="link-button" onClick={copySupportEmail} type="button">
+              {supportEmailCopied ? <Check size={14} strokeWidth={2.6} /> : <Copy size={14} strokeWidth={2.2} />}
+              {supportEmailCopied ? t("settings.support.copied") : t("settings.support.copy")}
+            </button>
+          </p>
         </div>
       </section>
 

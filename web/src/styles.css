@@ -7422,10 +7422,49 @@ tbody tr:last-child td {
   gap: var(--space-md);
 }
 
+.settings-support {
+  display: grid;
+  gap: var(--space-sm);
+  justify-items: start;
+}
+
 /* El boton de soporte es un <a href="mailto:"> con la pinta de .secondary-action: sin
    subrayado de enlace (la clase ya le pone su propio color, no hereda el azul). */
 .settings-support .secondary-action {
   text-decoration: none;
+}
+
+/* Fila de respaldo bajo el boton: la direccion a la vista y un boton de copiar, para
+   cuando el mailto no abre nada (sin cliente de correo, habitual en escritorio). */
+.settings-support-fallback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3xs) var(--space-xs);
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.settings-support-fallback a {
+  color: var(--strong-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.settings-support-fallback .link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.settings-support-fallback .link-button:hover {
+  text-decoration: underline;
 }
 
 .migration-status {
