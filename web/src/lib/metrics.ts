@@ -150,7 +150,38 @@ export function formatAmount(value: number) {
    formatSignedMoney en el legado — sin el, un dia ganador y un dia a cero se leian
    igual de neutros. El dato exacto y sin recortar sigue completo en el aria-label de la
    celda y en el panel de detalle. */
+/* Escala compacta compartida por los dos formatos de celda del calendario: de 1.000 a
+   999.999 divide por mil y sufija "K"; de un millon para arriba, por millon y "M" (un dia
+   de siete cifras es rarisimo en una prop, pero "1235K" se leia peor que "1,2M"). Una
+   cifra decimal solo mientras el numero escalado tiene una sola cifra entera (1K-9,9K,
+   1M-9,9M); a partir de diez, ninguna — el decimal no aporta y cada caracter cuenta en la
+   celda mas estrecha. Por debajo de 1.000 devuelve null: "129" ya es corto y "0,1K" seria
+   menos legible, no mas. */
+function compactScale(value: number) {
+  const abs = Math.abs(value);
+  if (abs < 1000) return null;
+  const [scaled, suffix] = abs >= 1_000_000 ? [value / 1_000_000, "M"] : [value / 1000, "K"];
+  return { scaled, suffix, fractionDigits: Math.abs(scaled) >= 10 ? 0 : 1 };
+}
+
 export function formatMoneyCompactSigned(value: number, currency: Currency = "EUR") {
+  /* Notacion compacta "K"/"M" como el calendario de Tradezella: "2.410 $" -> "+2,4K $".
+     Es lo que permite que el importe vaya mas grande sin recortarse — un dia de cinco
+     cifras spelled ("-12.500 $", ~75px a --text-md) no cabe en la celda mas estrecha;
+     "-13K $" pide ~50. La letra se inserta tras el ultimo digito, antes del espacio y el
+     simbolo, que en es-ES van siempre al final. */
+  const compact = compactScale(value);
+  if (compact) {
+    const text = new Intl.NumberFormat("es-ES", {
+      currency,
+      currencyDisplay: "narrowSymbol",
+      maximumFractionDigits: compact.fractionDigits,
+      minimumFractionDigits: 0,
+      signDisplay: "exceptZero",
+      style: "currency",
+    }).format(compact.scaled);
+    return text.replace(/(\d)(\D*)$/, `$1${compact.suffix}$2`);
+  }
   return new Intl.NumberFormat("es-ES", {
     currency,
     currencyDisplay: "narrowSymbol",
@@ -177,6 +208,19 @@ export function formatMoneyCompactSigned(value: number, currency: Currency = "EU
    hoy solo en la hoja de estilos, y ahi es donde alguien lo va a buscar el dia que lo
    mueva. Mismo patron en el eje de fechas de CapitalCurve. */
 export function formatAmountCompactSigned(value: number) {
+  /* Misma notacion compacta que formatMoneyCompactSigned, aqui sin divisa: "-2410" -> "-2,4K".
+     En movil la celda deja ~37px, asi que esto es lo que hace entrar un dia de miles
+     ("-2,4K" pide ~34; "-2410" pedia ~52 y se recortaba). */
+  const compact = compactScale(value);
+  if (compact) {
+    const text = new Intl.NumberFormat("es-ES", {
+      maximumFractionDigits: compact.fractionDigits,
+      minimumFractionDigits: 0,
+      signDisplay: "exceptZero",
+      useGrouping: false,
+    }).format(compact.scaled);
+    return `${text}${compact.suffix}`;
+  }
   return new Intl.NumberFormat("es-ES", {
     maximumFractionDigits: 0,
     signDisplay: "exceptZero",

@@ -511,6 +511,14 @@ sesión no vuelva a pisarlas.
   y gana un dígito entero de sitio: "−1.250" pide 38px de los 39 útiles y "−1250" pide 32,
   que es lo que hace entrar hasta cinco cifras. `CapitalCurve` tiene su equivalente para
   fechas, `formatTinyDate` ("7/3" en vez de "07 mar").
+  **Desde el 8 de septiembre de 2026 los dos compactos del calendario usan notación
+  "K"/"M"** (`compactScale` en `metrics.ts`): a partir de 1.000, "2.410 $" → "+2,4K $";
+  a partir de un millón, "M". Una cifra decimal solo mientras el número escalado tiene una
+  sola cifra entera (1–9,9K y 1–9,9M); de diez para arriba, ninguna. Por debajo de 1.000
+  no toca nada. Se hizo copiando el calendario de Tradezella, y su valor real es que un
+  día de cinco cifras deja de recortarse: a `--text-md` (que es a lo que subió el importe
+  ese día, ver la sección de móvil/Journal) "−12.500 $" pedía ~75px y "−13K $" pide ~50.
+  El aria-label y el panel de detalle siguen con el importe exacto vía `formatMoney`.
 - **Cuando un texto necesita dos formatos según el ancho, emítelos los dos y que elija el
   `@media`.** Es lo que hacen la celda del calendario y el eje de fechas: dos `<span>`, uno
   con `display: none`. Un `useMediaQuery` también valdría —esta app es solo cliente, así
