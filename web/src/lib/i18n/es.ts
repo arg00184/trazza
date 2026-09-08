@@ -35,6 +35,8 @@ export const es = {
   "appShell.nav.journalEntries": "Trades",
   "appShell.sidebar.expand": "Expandir menu",
   "appShell.sidebar.collapse": "Contraer menu",
+  "appShell.sidebar.open": "Abrir menu",
+  "appShell.sidebar.close": "Cerrar menu",
   "appShell.sidebar.menuLabel": "Menu de navegacion",
   "appShell.sidebar.defaultUser": "Usuario Trazza",
   "appShell.view.overview.eyebrow": "Finanzas",

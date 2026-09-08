@@ -426,6 +426,50 @@ button {
   color: #ffffff;
 }
 
+/* CONTROLES DEL CAJON MOVIL
+   Los tres solo existen por debajo de 820px, pero su aspecto se declara aqui y no dentro
+   del @media para que alli solo haya que encender el display. Asi el que un control se
+   vea (decision de disposicion) y como se ve (decision de estilo) no viven en el mismo
+   sitio, que es lo que hizo que .sidebar-nav se quedara apuntando a una clase muerta sin
+   que se notara.
+   44px y no los 38 del resto de controles: es el minimo con el que un dedo acierta sin
+   mirar. Los 38 valen para el raton, que apunta con un pixel. */
+.nav-trigger,
+.nav-close {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--strong-muted);
+}
+
+/* El aspa vive dentro del riel, que es oscuro tenga la app el tema que tenga (ver
+   --sidebar): mismos colores literales que .sidebar-toggle, no tokens de tema. */
+.nav-close {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  color: #d8d2e8;
+}
+
+.nav-close:hover {
+  border-color: rgba(167, 121, 255, 0.34);
+  background: rgba(167, 121, 255, 0.14);
+  color: #ffffff;
+}
+
+.nav-backdrop {
+  display: none;
+}
+
+/* En escritorio se desaparece de la caja: la hamburguesa esta oculta y el bloque de
+   titulo vuelve a ser hijo directo del flex de .topbar, tal cual estaba. */
+.topbar-lead {
+  display: contents;
+}
+
 .nav-group button,
 .user-card {
   display: flex;
@@ -7425,27 +7469,88 @@ tbody tr:last-child td {
     overflow-x: hidden;
   }
 
+  /* El riel pasa a ser un cajon sobre el contenido. Antes se quedaba apilado arriba
+     (position: static) y ocupaba 538px: en un telefono de 812 eso es la primera pantalla
+     entera dedicada al menu, con el primer dato siempre por debajo del pliegue.
+     Habia tres reglas mas aqui —.sidebar-nav a dos columnas y .sidebar-status oculto—
+     que intentaban aliviar justo eso y no hacian nada: esas clases no existen en el
+     marcado (el menu es .nav-list / .nav-group desde que se fundio el interruptor de
+     area con la lista). Borradas junto con el apilado que pretendian arreglar.
+     La altura va en dvh y no en vh, aqui y en las otras cuatro alturas de pantalla de la
+     hoja: en moviles el 100vh mide la ventana SIN la barra del navegador, que se retrae al
+     desplazar, asi que el pie del cajon —donde vive la ficha de usuario— quedaba por
+     debajo de ella hasta que el usuario hacia scroll. dvh sigue esa barra. */
   .sidebar {
-    position: static;
-    height: auto;
-    overflow: hidden;
-    padding: var(--space-xl);
+    position: fixed;
+    z-index: 60;
+    top: 0;
+    left: 0;
+    width: min(300px, 84vw);
+    height: 100dvh;
+    overflow-y: auto;
+    padding: var(--space-xl) var(--space-md) var(--space-2xl);
+    /* visibility, y no solo el desplazamiento: un cajon cerrado que sigue siendo
+       "visible" se queda en el orden de tabulacion, y el teclado recorre un menu que no
+       esta en pantalla. Al cerrar se retrasa hasta el final de la transicion para que el
+       deslizamiento llegue a verse; al abrir cambia en el acto. */
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform var(--dur) var(--ease-entrance),
+      visibility 0s linear var(--dur);
   }
 
-  .sidebar-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
+  .app-shell[data-mobile-nav="open"] .sidebar {
+    visibility: visible;
+    transform: translateX(0);
+    transition:
+      transform var(--dur) var(--ease-entrance),
+      visibility 0s;
   }
 
-  .sidebar-nav button {
-    justify-content: flex-start;
-    min-width: 0;
+  /* La capa oscura existe siempre en movil (no display:none) para que la opacidad tenga
+     de donde salir; lo que se enciende es el color y el paso de los eventos. */
+  .nav-backdrop {
+    position: fixed;
+    z-index: 55;
+    inset: 0;
+    display: block;
+    border: 0;
+    padding: 0;
+    background: rgba(8, 6, 16, 0.52);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
   }
 
-  .sidebar-status {
+  .app-shell[data-mobile-nav="open"] .nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav-trigger {
+    display: inline-grid;
+  }
+
+  /* Contraer el riel no significa nada cuando ya es un cajon: el hueco de 32px que tenia
+     en .brand lo ocupa ahora el aspa de cerrar, a 44 para que se pueda dar con el dedo. */
+  .sidebar-toggle {
     display: none;
+  }
+
+  .nav-close {
+    display: inline-grid;
+  }
+
+  .brand {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .topbar-lead {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    min-width: 0;
   }
 
   .workspace {

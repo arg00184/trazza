@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Languages,
   LogOut,
+  Menu,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -16,8 +17,9 @@ import {
   Settings,
   Sun,
   WalletCards,
+  X,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useI18n, useT } from "../lib/i18n/context";
 import type { DataMode, NavigationView, UserProfile } from "../types";
 import { TopbarMenu, type TopbarMenuItem } from "./TopbarMenu";
@@ -93,6 +95,22 @@ export function AppShell({
   theme,
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
+  /* En movil el riel lateral no cabe al lado del contenido, y apilado encima se comia la
+     primera pantalla entera (538px de menu antes del primer dato). Pasa a ser un cajon
+     sobre el contenido. El estado vive aqui y no en CSS porque hacen falta tres cosas que
+     el CSS no da: cerrarlo al elegir destino, cerrarlo con Escape y bloquear el scroll del
+     fondo mientras esta abierto. Que se vea o no lo sigue decidiendo el @media. */
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
+  /* Elegir destino cierra el cajon. En escritorio no cambia nada (mobileNavOpen ya es
+     false), asi que la navegacion no necesita saber en que tamano esta. */
+  const goToView = useCallback(
+    (view: NavigationView) => {
+      setMobileNavOpen(false);
+      onViewChange(view);
+    },
+    [onViewChange],
+  );
   const t = useT();
   const { language, setLanguage } = useI18n();
   const financeItems = useMemo(() => getFinanceItems(t), [t]);
@@ -116,6 +134,37 @@ export function AppShell({
       : dataMode === "cloud"
         ? t("appShell.status.cloud")
         : t("appShell.status.demo");
+
+  /* Escape cierra el cajon, y mientras esta abierto el fondo no se desplaza: sin esto, al
+     arrastrar sobre la capa oscura se mueve la pagina de detras y al cerrar apareces en
+     otro sitio. */
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileNavOpen]);
+
+  /* Al ensanchar por encima del punto donde el cajon existe hay que soltarlo a mano. Si no,
+     el estado se queda en "abierto": el @media devuelve el riel a su sitio y el cajon no se
+     ve, pero el efecto de arriba sigue vivo y deja el body sin scroll en escritorio. El 820
+     es el mismo numero que el @media, y tiene que seguir siendolo. */
+  useEffect(() => {
+    const wide = window.matchMedia("(min-width: 821px)");
+    const sync = () => {
+      if (wide.matches) setMobileNavOpen(false);
+    };
+    sync();
+    wide.addEventListener("change", sync);
+    return () => wide.removeEventListener("change", sync);
+  }, []);
 
   /* Los controles de segundo nivel de la barra superior. Antes eran cuatro iconos sueltos
      junto al boton principal y el de privacidad (seis en total, que no cabian bien);
@@ -156,8 +205,14 @@ export function AppShell({
   }, [t, language, setLanguage, onRefresh, onSignOut, isSyncing]);
 
   return (
-    <div className="app-shell" data-privacy={privacyHidden ? "hidden" : "visible"} data-sidebar={collapsed ? "collapsed" : "expanded"} data-view={activeView}>
-      <aside className="sidebar">
+    <div
+      className="app-shell"
+      data-mobile-nav={mobileNavOpen ? "open" : "closed"}
+      data-privacy={privacyHidden ? "hidden" : "visible"}
+      data-sidebar={collapsed ? "collapsed" : "expanded"}
+      data-view={activeView}
+    >
+      <aside className="sidebar" id="app-nav">
         <div className="brand">
           <Wordmark />
           <button
@@ -167,6 +222,12 @@ export function AppShell({
             type="button"
           >
             {collapsed ? <PanelLeftOpen size={17} strokeWidth={2.2} /> : <PanelLeftClose size={17} strokeWidth={2.2} />}
+          </button>
+          {/* Solo en movil. Contraer el riel no significa nada cuando el riel es un cajon
+              que ya esta encima del contenido, asi que el @media cambia uno por otro en
+              vez de sumar un tercer control a .brand. */}
+          <button aria-label={t("appShell.sidebar.close")} className="nav-close" onClick={closeMobileNav} type="button">
+            <X size={19} strokeWidth={2.2} />
           </button>
         </div>
 
@@ -182,7 +243,7 @@ export function AppShell({
             {financeItems.map((item) => {
               const Icon = item.icon;
               return (
-                <button className={activeView === item.id ? "active" : ""} key={item.id} onClick={() => onViewChange(item.id)} type="button">
+                <button className={activeView === item.id ? "active" : ""} key={item.id} onClick={() => goToView(item.id)} type="button">
                   <Icon size={18} strokeWidth={2.15} />
                   <span>{item.label}</span>
                 </button>
@@ -200,7 +261,7 @@ export function AppShell({
             {journalItems.map((item) => {
               const Icon = item.icon;
               return (
-                <button className={activeView === item.id ? "active" : ""} key={item.id} onClick={() => onViewChange(item.id)} type="button">
+                <button className={activeView === item.id ? "active" : ""} key={item.id} onClick={() => goToView(item.id)} type="button">
                   <Icon size={18} strokeWidth={2.15} />
                   <span>{item.label}</span>
                 </button>
@@ -209,7 +270,7 @@ export function AppShell({
           </div>
         </nav>
 
-        <button className="user-card" onClick={() => onViewChange("settings")} type="button">
+        <button className="user-card" onClick={() => goToView("settings")} type="button">
           <span>{(profile?.displayName || "T").charAt(0).toUpperCase()}</span>
           <span>
             <strong>{profile?.displayName || t("appShell.sidebar.defaultUser")}</strong>
@@ -219,17 +280,39 @@ export function AppShell({
         </button>
       </aside>
 
+      {/* Fuera de <aside> y sin portal: ningun ancestro lleva transform (ni .app-shell ni
+          .workspace animan), asi que un position:fixed aqui mide la ventana. Si algun dia
+          se le pone una animacion de entrada al armazon, esto y el cajon tendrian que
+          irse a un portal, igual que los modales. */}
+      <button aria-hidden="true" className="nav-backdrop" onClick={closeMobileNav} tabIndex={-1} type="button" />
+
       <main className="workspace">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">{currentDate}</p>
-            <h1>{activeCopy.title}</h1>
-            {(isSyncing || syncError || dataMode === "demo") && (
-              <div className={`sync-status ${syncError ? "error" : ""}`}>
-                <span />
-                <small>{statusLabel}</small>
-              </div>
-            )}
+          {/* .topbar-lead es display:contents en escritorio: la hamburguesa esta oculta y
+              el bloque de titulo participa en el flex de .topbar tal cual, sin que cambie
+              nada de lo ya ajustado. En movil pasa a ser una fila propia para que el boton
+              y el titulo compartan linea aunque .topbar se apile. */}
+          <div className="topbar-lead">
+            <button
+              aria-controls="app-nav"
+              aria-expanded={mobileNavOpen}
+              aria-label={t("appShell.sidebar.open")}
+              className="nav-trigger"
+              onClick={() => setMobileNavOpen(true)}
+              type="button"
+            >
+              <Menu size={19} strokeWidth={2.2} />
+            </button>
+            <div>
+              <p className="eyebrow">{currentDate}</p>
+              <h1>{activeCopy.title}</h1>
+              {(isSyncing || syncError || dataMode === "demo") && (
+                <div className={`sync-status ${syncError ? "error" : ""}`}>
+                  <span />
+                  <small>{statusLabel}</small>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="topbar-actions">

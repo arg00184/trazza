@@ -37,6 +37,8 @@ export const en: Record<TranslationKey, string> = {
   "appShell.nav.journalEntries": "Trades",
   "appShell.sidebar.expand": "Expand menu",
   "appShell.sidebar.collapse": "Collapse menu",
+  "appShell.sidebar.open": "Open menu",
+  "appShell.sidebar.close": "Close menu",
   "appShell.sidebar.menuLabel": "Navigation menu",
   "appShell.sidebar.defaultUser": "Trazza user",
   "appShell.view.overview.eyebrow": "Finance",
