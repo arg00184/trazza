@@ -4806,9 +4806,12 @@ button {
   gap: var(--space-xs);
   min-width: 0;
   min-height: 88px;
-  /* --line-strong y no --line: hairline de 1px pero que se ve en todos los cuadrados,
-     tambien los vacios, para que la rejilla quede perfilada como en el de referencia. */
-  border: 1px solid var(--line-strong);
+  /* Hairline de 1px que se ve de verdad en todos los cuadrados, tambien los vacios:
+     var(--line-strong) sobre un fondo casi blanco no se distinguia. Un gris medio al 42%
+     de --strong-muted sobre transparente (o sea, sobre el fondo de cada celda) queda
+     perfilado sin llegar a pesar, y funciona en los dos temas porque --strong-muted ya
+     invierte (oscuro en claro, claro en oscuro). */
+  border: 1px solid color-mix(in srgb, var(--strong-muted) 42%, transparent);
   border-radius: var(--radius-sm);
   /* --space-2xs (4) y no --space-md (12): al subir el gap de la rejilla (arriba) cada
      celda perdio ancho, y en este panel las celdas ya eran estrechas de por si (57px
@@ -4834,7 +4837,6 @@ button {
 }
 
 .journal-day.has-entries {
-  border-color: var(--line-strong);
   background: var(--surface);
 }
 
@@ -4843,16 +4845,16 @@ button {
    rojo del dia se lean de un vistazo como en el calendario de referencia. Es un mix local
    y no un token nuevo a proposito — --positive-soft se usa en mas sitios (Panel, avisos)
    y ahi el tono suave es el correcto.
-   El borde tira del mismo acento a mayor proporcion (~44%): asi cada cuadrado queda
-   perfilado con una linea finisima que se ve contra su propio relleno, cosa que
-   var(--line-strong) (gris neutro) no hacia sobre el verde/rojo. */
+   El borde tira del mismo acento a ~65%: contra su propio relleno (28%) queda un
+   contorno claramente mas oscuro, verde sobre verde o rojo sobre rojo. A menos
+   proporcion no se distinguia del relleno. */
 .journal-day.positive {
-  border-color: color-mix(in srgb, var(--positive) 44%, var(--surface));
+  border-color: color-mix(in srgb, var(--positive) 65%, var(--surface));
   background: color-mix(in srgb, var(--positive) 28%, var(--surface));
 }
 
 .journal-day.negative {
-  border-color: color-mix(in srgb, var(--negative) 44%, var(--surface));
+  border-color: color-mix(in srgb, var(--negative) 65%, var(--surface));
   background: color-mix(in srgb, var(--negative) 28%, var(--surface));
 }
 
@@ -4862,12 +4864,12 @@ button {
    por defecto, sin tenirse. En claro si se veia porque .journal-day.positive/.negative
    solo compiten ahi con la base .journal-day sin tema (0,1,0), que si pierden. */
 :root[data-theme="dark"] .journal-day.positive {
-  border-color: color-mix(in srgb, var(--positive) 40%, var(--surface));
+  border-color: color-mix(in srgb, var(--positive) 55%, var(--surface));
   background: color-mix(in srgb, var(--positive) 30%, var(--surface));
 }
 
 :root[data-theme="dark"] .journal-day.negative {
-  border-color: color-mix(in srgb, var(--negative) 40%, var(--surface));
+  border-color: color-mix(in srgb, var(--negative) 55%, var(--surface));
   background: color-mix(in srgb, var(--negative) 30%, var(--surface));
 }
 
