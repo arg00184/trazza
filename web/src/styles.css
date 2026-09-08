@@ -4807,11 +4807,12 @@ button {
   min-width: 0;
   min-height: 88px;
   /* Hairline de 1px que se ve de verdad en todos los cuadrados, tambien los vacios:
-     var(--line-strong) sobre un fondo casi blanco no se distinguia. Un gris medio al 42%
-     de --strong-muted sobre transparente (o sea, sobre el fondo de cada celda) queda
-     perfilado sin llegar a pesar, y funciona en los dos temas porque --strong-muted ya
-     invierte (oscuro en claro, claro en oscuro). */
-  border: 1px solid color-mix(in srgb, var(--strong-muted) 42%, transparent);
+     var(--line-strong) (y un 42% de --strong-muted, que se probo antes) sobre un fondo
+     casi blanco no se distinguian. 55% de --strong-muted mezclado con --surface da un
+     gris medio solido (~#9f9fa3 en claro, ~#7e7e83 en oscuro) que perfila la celda sin
+     pesar. Mezcla con --surface y no con transparent porque en el panel oculto del
+     navegador color-mix con transparent no resolvia y complicaba verificarlo. */
+  border: 1px solid color-mix(in srgb, var(--strong-muted) 55%, var(--surface));
   border-radius: var(--radius-sm);
   /* --space-2xs (4) y no --space-md (12): al subir el gap de la rejilla (arriba) cada
      celda perdio ancho, y en este panel las celdas ya eran estrechas de por si (57px
@@ -4845,16 +4846,16 @@ button {
    rojo del dia se lean de un vistazo como en el calendario de referencia. Es un mix local
    y no un token nuevo a proposito — --positive-soft se usa en mas sitios (Panel, avisos)
    y ahi el tono suave es el correcto.
-   El borde tira del mismo acento a ~65%: contra su propio relleno (28%) queda un
-   contorno claramente mas oscuro, verde sobre verde o rojo sobre rojo. A menos
-   proporcion no se distinguia del relleno. */
+   El borde va al acento pleno (var(--positive)/var(--negative), sin mezcla): contra el
+   relleno del 28% es un contorno de 1px claramente verde o rojo, no un matiz. Se probo
+   al 65% mezclado y seguia sin distinguirse; a 1px el color pleno no pesa. */
 .journal-day.positive {
-  border-color: color-mix(in srgb, var(--positive) 65%, var(--surface));
+  border-color: var(--positive);
   background: color-mix(in srgb, var(--positive) 28%, var(--surface));
 }
 
 .journal-day.negative {
-  border-color: color-mix(in srgb, var(--negative) 65%, var(--surface));
+  border-color: var(--negative);
   background: color-mix(in srgb, var(--negative) 28%, var(--surface));
 }
 
@@ -4864,12 +4865,12 @@ button {
    por defecto, sin tenirse. En claro si se veia porque .journal-day.positive/.negative
    solo compiten ahi con la base .journal-day sin tema (0,1,0), que si pierden. */
 :root[data-theme="dark"] .journal-day.positive {
-  border-color: color-mix(in srgb, var(--positive) 55%, var(--surface));
+  border-color: var(--positive);
   background: color-mix(in srgb, var(--positive) 30%, var(--surface));
 }
 
 :root[data-theme="dark"] .journal-day.negative {
-  border-color: color-mix(in srgb, var(--negative) 55%, var(--surface));
+  border-color: var(--negative);
   background: color-mix(in srgb, var(--negative) 30%, var(--surface));
 }
 
@@ -7439,7 +7440,12 @@ tbody tr:last-child td {
   line-height: var(--leading-snug);
 }
 
-/* Card surfaces: keep layout size but remove visible outlines. */
+/* Card surfaces: keep layout size but remove visible outlines.
+   .journal-day quedo FUERA de esta lista a proposito el 8 de septiembre de 2026: el
+   calendario del Journal si quiere borde visible en cada cuadrado (gris en las vacias,
+   el acento pleno en verde/rojo). Este !important era justo lo que anulaba en silencio
+   todas las reglas de border-color de .journal-day y sus estados — el sintoma era que
+   "no se veia reflejado" ningun cambio de borde por mucho que se desplegara. */
 .metric-card,
 .panel,
 .directory-card,
@@ -7450,7 +7456,6 @@ tbody tr:last-child td {
 .firm-overview-stats span,
 .journal-account-overview-stats div,
 .journal-account-rule,
-.journal-day,
 .journal-breakdown-row,
 .journal-breakdown-empty,
 .journal-error-type-row,
