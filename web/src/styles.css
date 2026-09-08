@@ -7624,6 +7624,13 @@ tbody tr:last-child td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* Las dos que ocupan doble columna vuelven a hacerlo, y por la misma cuenta que en
+     escritorio: son 6 tarjetas, con la destacada a doble son 7 celdas, y 7 no cuadra en 2
+     columnas — la ultima se quedaba sola con un hueco al lado. Con la ultima tambien a
+     doble son 8, que son cuatro filas exactas. El breakpoint de 1180 las habia puesto a
+     "auto" para su rejilla de 3 (donde 8 celdas si dejarian hueco); aqui hay que
+     devolverlas, porque ese bloque esta antes en el archivo y no se deshace solo. */
+  .metric-grid .metric-card:last-child,
   .metric-card.is-featured {
     grid-column: span 2;
   }
@@ -7781,8 +7788,14 @@ tbody tr:last-child td {
     justify-self: start;
   }
 
+  /* Las tarjetas del Panel se quedan a dos columnas en movil en vez de apilarse a una.
+     Una columna gastaba ~900px de desplazamiento para enseñar 7 cifras cortas: cada
+     tarjeta ocupaba los 343px de ancho para un importe que mide 124, y el Panel entero
+     media 4.516px de alto. La etiqueta mas larga ("Break-even") cabe de sobra en los
+     165px que deja media columna. La destacada sigue ocupando las dos, que es lo que la
+     hace destacada. */
   .metric-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   /* Los cuatro KPIs del Journal se apilan aqui y no antes, igual que el legado, que
@@ -7792,11 +7805,6 @@ tbody tr:last-child td {
      no recoge lo que diga .metric-grid a secas en ningun breakpoint. */
   .metric-grid.journal-kpi-grid {
     grid-template-columns: 1fr;
-  }
-
-  .metric-grid .metric-card:last-child,
-  .metric-card.is-featured {
-    grid-column: auto;
   }
 
   .period-month-bars {
