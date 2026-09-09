@@ -494,6 +494,8 @@ export const es = {
   "journal.calendar.weekPrefix": "SEMANA",
   "journal.calendar.monthTotal": "Total del mes",
   "journal.calendar.tradedDaysSuffix": "días operados",
+  "journal.calendar.daysUnit": "días",
+  "journal.calendar.daysUnitOne": "día",
   "journal.calendar.today": "Hoy",
   "journal.calendar.opsSuffix": "operaciones",
   "journal.calendar.opsSuffixOne": "operación",

@@ -496,6 +496,8 @@ export const en: Record<TranslationKey, string> = {
   "journal.calendar.weekPrefix": "WEEK",
   "journal.calendar.monthTotal": "Month total",
   "journal.calendar.tradedDaysSuffix": "trading days",
+  "journal.calendar.daysUnit": "days",
+  "journal.calendar.daysUnitOne": "day",
   "journal.calendar.today": "Today",
   "journal.calendar.opsSuffix": "trades",
   "journal.calendar.opsSuffixOne": "trade",

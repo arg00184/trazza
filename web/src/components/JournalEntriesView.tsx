@@ -483,6 +483,7 @@ export function JournalEntriesView({
         days,
         entries: days.reduce((total, day) => total + day.count, 0),
         key: days[0]?.date ?? `semana-${index}`,
+        number: index + 1,
         pnl: days.reduce((total, day) => total + day.pnl - day.payoutGross, 0),
         /* Dias con al menos una operacion, no dias con algun movimiento: un payout sin
            trades ese dia no cuenta como "dia operado". */
@@ -959,16 +960,14 @@ export function JournalEntriesView({
             </button>
               ))}
               <div className={`journal-week-summary ${week.entries ? signedTone(week.pnl) : "is-empty"}`}>
-                <span>{t("journal.calendar.weekPrefix")}</span>
+                <span>{`${t("journal.calendar.weekPrefix")} ${week.number}`}</span>
                 {/* Formato compacto como las celdas de dia: deja estrechar la columna de
                     semana para dar ancho a los dias. El total exacto del mes sigue arriba. */}
                 <strong>{formatMoneyCompactSigned(week.entries ? week.pnl : 0, currency)}</strong>
-                {/* Mismo formato que el numerito de dias del P&L total: una pill en vez
-                    de texto plano. En una columna de 85px "N dias operados" no cabia
-                    inline junto al importe, asi que se queda en su propia fila, como
-                    antes tenia el texto. */}
-                <span className="journal-total-days-badge" title={`${week.tradedDays} ${t("journal.calendar.tradedDaysSuffix")}`}>
-                  {week.tradedDays}
+                {/* La pill lleva el recuento con su unidad ("2 días" / "1 día"), no solo
+                    el numero. Mismo color y redondeo (.journal-total-days-badge). */}
+                <span className="journal-total-days-badge" title={t("journal.calendar.tradedDaysSuffix")}>
+                  {`${week.tradedDays} ${week.tradedDays === 1 ? t("journal.calendar.daysUnitOne") : t("journal.calendar.daysUnit")}`}
                 </span>
               </div>
             </Fragment>

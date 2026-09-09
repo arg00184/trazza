@@ -259,17 +259,17 @@ function drawCalendar(canvas: HTMLCanvasElement, input: CalendarImageInput, t: R
     ctx.strokeStyle = c.line;
     ctx.stroke();
 
-    label(t("journal.calendar.weekPrefix"), weekColX + 14, rowY + 18, "700 10px", c.accent, "left", "middle");
+    label(`${t("journal.calendar.weekPrefix")} ${wi + 1}`, weekColX + 14, rowY + 18, "700 10px", c.accent, "left", "middle");
     label(
       formatMoneyCompactSigned(week.entries ? week.pnl : 0, input.currency),
       weekColX + 14,
       rowY + CELL_H / 2 + 4,
-      "700 14px",
+      "700 15px",
       week.entries ? toneColor(week.pnl, c) : c.muted,
       "left",
       "middle",
     );
-    const pillText = String(week.tradedDays);
+    const pillText = `${week.tradedDays} ${week.tradedDays === 1 ? t("journal.calendar.daysUnitOne") : t("journal.calendar.daysUnit")}`;
     ctx.font = `700 11px ${FONT_STACK}`;
     const pillW = ctx.measureText(pillText).width + 16;
     const pillH = 18;
