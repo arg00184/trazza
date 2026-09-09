@@ -498,6 +498,7 @@ export const en: Record<TranslationKey, string> = {
   "journal.calendar.tradedDaysSuffix": "trading days",
   "journal.calendar.today": "Today",
   "journal.calendar.opsSuffix": "trades",
+  "journal.calendar.opsSuffixOne": "trade",
   "journal.calendar.payoutPrefix": "Payout",
   "journal.calendar.entriesAriaSuffix": "trades",
   "journal.calendar.payoutsAriaSuffix": "payouts for",

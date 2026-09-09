@@ -1,5 +1,5 @@
 import type { useT } from "./i18n/context";
-import { formatMoney, formatMoneyCompactSigned, signedTone } from "./metrics";
+import { formatMoney, formatMoneyCompactSigned, formatPercentCompact, signedTone } from "./metrics";
 import type { Currency } from "../types";
 
 /* Genera un PNG del calendario del Journal para compartir: lo dibuja a mano en un
@@ -17,6 +17,7 @@ export type CalendarImageDay = {
   payoutCount: number;
   payoutGross: number;
   pnl: number;
+  wins: number; // operaciones ganadoras del dia, para el winrate de la celda
 };
 
 export type CalendarImageWeek = {
@@ -216,31 +217,34 @@ function drawCalendar(canvas: HTMLCanvasElement, input: CalendarImageInput, t: R
 
       if (!day.inMonth) ctx.globalAlpha = 0.52;
 
+      // El numero del dia en la esquina superior derecha, como en la UI (y Tradezella).
       const dayNumber = String(Number(day.date.slice(-2)));
       if (day.date === input.todayDate) {
         ctx.beginPath();
-        ctx.arc(x + 20, rowY + 20, 12, 0, Math.PI * 2);
+        ctx.arc(x + DAY_W - 18, rowY + 18, 12, 0, Math.PI * 2);
         ctx.fillStyle = c.accent;
         ctx.fill();
-        label(dayNumber, x + 20, rowY + 20, "700 12px", "#ffffff", "center", "middle");
+        label(dayNumber, x + DAY_W - 18, rowY + 18, "700 12px", "#ffffff", "center", "middle");
       } else {
-        label(dayNumber, x + 12, rowY + 14, "700 13px", day.inMonth ? c.strongMuted : c.muted, "left", "middle");
+        label(dayNumber, x + DAY_W - 12, rowY + 14, "700 12px", c.muted, "right", "middle");
       }
 
-      const midY = rowY + CELL_H / 2 + 6;
+      // Importe (grande) + operaciones + winrate, centrados como grupo. Un dia vacio no
+      // pinta nada mas: en la UI la celda se apaga, aqui igual (sin el "–" de antes).
       if (hasTrades || hasPayout) {
         const value = hasTrades ? day.pnl : -day.payoutGross;
         const amountColor = hasPayout && !hasTrades ? c.payoutText : toneColor(value, c);
-        label(formatMoneyCompactSigned(value, input.currency), x + DAY_W / 2, midY, "700 17px", amountColor, "center", "middle");
-      } else {
-        label("–", x + DAY_W / 2, midY, "600 15px", c.muted, "center", "middle");
-      }
+        label(formatMoneyCompactSigned(value, input.currency), x + DAY_W / 2, rowY + CELL_H / 2 - 6, "700 18px", amountColor, "center", "middle");
 
-      if (day.inMonth && (hasTrades || hasPayout)) {
-        const sub = hasTrades
-          ? `${day.count} ${t("journal.calendar.opsSuffix")}`
-          : t("journal.calendar.payoutPrefix");
-        label(sub, x + DAY_W / 2, rowY + CELL_H - 14, "600 11px", c.muted, "center", "middle");
+        if (day.inMonth) {
+          const sub = hasTrades
+            ? `${day.count} ${day.count === 1 ? t("journal.calendar.opsSuffixOne") : t("journal.calendar.opsSuffix")}`
+            : t("journal.calendar.payoutPrefix");
+          label(sub, x + DAY_W / 2, rowY + CELL_H / 2 + 14, "600 11px", c.muted, "center", "middle");
+          if (hasTrades) {
+            label(formatPercentCompact(day.wins / day.count), x + DAY_W / 2, rowY + CELL_H / 2 + 30, "600 11px", c.muted, "center", "middle");
+          }
+        }
       }
 
       ctx.globalAlpha = 1;
@@ -257,7 +261,7 @@ function drawCalendar(canvas: HTMLCanvasElement, input: CalendarImageInput, t: R
 
     label(t("journal.calendar.weekPrefix"), weekColX + 14, rowY + 18, "700 10px", c.accent, "left", "middle");
     label(
-      formatMoney(week.entries ? week.pnl : 0, input.currency),
+      formatMoneyCompactSigned(week.entries ? week.pnl : 0, input.currency),
       weekColX + 14,
       rowY + CELL_H / 2 + 4,
       "700 14px",

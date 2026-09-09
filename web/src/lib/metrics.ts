@@ -165,30 +165,33 @@ function compactScale(value: number) {
 }
 
 export function formatMoneyCompactSigned(value: number, currency: Currency = "EUR") {
-  /* Notacion compacta "K"/"M" como el calendario de Tradezella: "2.410 $" -> "+2,4K $".
+  /* Notacion compacta "K"/"M" como el calendario de Tradezella: "2.410 $" -> "+$2,4K".
      Es lo que permite que el importe vaya mas grande sin recortarse — un dia de cinco
      cifras spelled ("-12.500 $", ~75px a --text-md) no cabe en la celda mas estrecha;
-     "-13K $" pide ~50. La letra se inserta tras el ultimo digito, antes del espacio y el
-     simbolo, que en es-ES van siempre al final. */
+     "-$13K" pide ~50.
+     El simbolo va DELANTE del numero (estilo US), no al final: el usuario lo pidio asi
+     para las celdas del calendario. es-ES lo pone detras, asi que se reordena con
+     formatToParts —el simbolo sale identificado por su `type`, no por su forma— y se
+     mantienen el punto de millar y la coma decimal del espanol. El sufijo K/M se pega
+     tras el ultimo digito. Reordenar no cambia el ancho: mismos caracteres. */
   const compact = compactScale(value);
-  if (compact) {
-    const text = new Intl.NumberFormat("es-ES", {
-      currency,
-      currencyDisplay: "narrowSymbol",
-      maximumFractionDigits: compact.fractionDigits,
-      minimumFractionDigits: 0,
-      signDisplay: "exceptZero",
-      style: "currency",
-    }).format(compact.scaled);
-    return text.replace(/(\d)(\D*)$/, `$1${compact.suffix}$2`);
-  }
-  return new Intl.NumberFormat("es-ES", {
+  const parts = new Intl.NumberFormat("es-ES", {
     currency,
     currencyDisplay: "narrowSymbol",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: compact ? compact.fractionDigits : 0,
+    minimumFractionDigits: 0,
     signDisplay: "exceptZero",
     style: "currency",
-  }).format(value);
+  }).formatToParts(compact ? compact.scaled : value);
+
+  const sign = parts.find((part) => part.type === "minusSign" || part.type === "plusSign")?.value ?? "";
+  const symbol = parts.find((part) => part.type === "currency")?.value ?? "";
+  const digits = parts
+    .filter((part) => ["integer", "group", "decimal", "fraction"].includes(part.type))
+    .map((part) => part.value)
+    .join("");
+
+  return `${sign}${symbol}${digits}${compact ? compact.suffix : ""}`;
 }
 
 /* Cuarto escalon, y el ultimo: el mismo compacto con signo pero sin divisa, solo para la

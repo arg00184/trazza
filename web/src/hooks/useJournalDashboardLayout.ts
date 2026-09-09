@@ -18,8 +18,10 @@ const storageKey = "trazza:journal-dashboard-layout";
      (half + quarter + quarter = 12).
    - Errores y Disciplina, mitad y mitad (half + half = 12) — la pareja que se pidio
      explicitamente igualar al legado.
-   - Calendario y Ultimas operaciones, ancho y estrecho (wide(8) + narrow(4) = 12).
-   Los ocho widgets suman 12+6+3+3+6+6+8+4 = 48 = 4 filas de 12 exactas.
+   - Calendario y Ultimas operaciones, ancho y estrecho (wide(9) + narrow(3) = 12). El
+     calendario se llevo una columna de Ultimas operaciones para que sus celdas de dia
+     respiren mas; ver los comentarios de "wide"/"narrow" en styles.css.
+   Los ocho widgets suman 12+6+3+3+6+6+9+3 = 48 = 4 filas de 12 exactas.
    Si tocas esto, la cuenta que tiene que salir es 12 por fila. */
 export const journalDashboardWidgetIds: JournalWidgetId[] = [
   "kpis",

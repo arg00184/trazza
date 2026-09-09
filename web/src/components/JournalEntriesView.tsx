@@ -471,13 +471,13 @@ export function JournalEntriesView({
     () => buildCalendarDays(visibleMonth, filteredEntries, movements),
     [filteredEntries, movements, visibleMonth],
   );
-  /* Las 42 celdas se parten en las seis semanas que ya forman, para poder pintar el
-     resumen semanal del legado en una octava columna. El total de la semana suma el P&L
-     de las entradas y resta el bruto de los payouts, igual que hace cada celda de dia.
-     El total del mes cuenta solo los dias del mes visible (inMonth), no las celdas de
-     relleno de los meses vecinos, que si entran en su semana pero no en el mes. */
+  /* Las celdas se parten en las semanas que el mes forma (4, 5 o 6 — las decide
+     buildCalendarDays), para pintar el resumen semanal del legado en una octava columna.
+     El total de la semana suma el P&L de las entradas y resta el bruto de los payouts,
+     igual que cada celda de dia. El total del mes cuenta solo los dias del mes visible
+     (inMonth), no las celdas de relleno de los meses vecinos. */
   const { calendarWeeks, monthTotal, monthEntries } = useMemo(() => {
-    const weeks = Array.from({ length: 6 }, (_, index) => {
+    const weeks = Array.from({ length: calendarDays.length / 7 }, (_, index) => {
       const days = calendarDays.slice(index * 7, index * 7 + 7);
       return {
         days,
@@ -907,46 +907,62 @@ export function JournalEntriesView({
               onClick={() => setDetailEntryId(day.firstEntryId)}
               type="button"
             >
-              <span>
-                {/* Tercer intento tras feedback: ni anillo en toda la celda ni punto
-                    suelto — un circulo relleno alrededor del propio numero, como en el
-                    ejemplo que paso el usuario. */}
+              {/* El numero del dia flota en una esquina (posicionado en CSS) y no cuenta
+                  para centrar el contenido — el importe manda, como en Tradezella. El
+                  circulo relleno de "hoy" envuelve el propio numero. */}
+              <span className="journal-day-date">
                 {day.date === todayDate ? (
                   <em className="journal-day-today-badge">{Number(day.date.slice(-2))}</em>
                 ) : (
                   Number(day.date.slice(-2))
                 )}
               </span>
-              {/* Dos veces el mismo importe, en dos formatos, y el @media enseña uno: con
-                  divisa mientras quepa, sin ella en el telefono (ver el comentario de
-                  formatAmountCompactSigned). Emitirlos los dos y elegir en CSS evita el
-                  parpadeo con el formato equivocado que daria decidirlo en JS. */}
-              <strong>
-                <span className="journal-day-amount">
-                  {day.count
-                    ? formatMoneyCompactSigned(day.pnl, currency)
-                    : day.payoutCount
-                      ? formatMoneyCompactSigned(-day.payoutGross, currency)
-                      : "-"}
+              {day.count || day.payoutCount ? (
+                <span className="journal-day-figure">
+                  {/* Dos veces el mismo importe, en dos formatos, y el @media enseña uno:
+                      con divisa mientras quepa, sin ella en el telefono (ver el comentario
+                      de formatAmountCompactSigned). Emitirlos los dos y elegir en CSS evita
+                      el parpadeo con el formato equivocado que daria decidirlo en JS. */}
+                  <strong>
+                    <span className="journal-day-amount">
+                      {day.count
+                        ? formatMoneyCompactSigned(day.pnl, currency)
+                        : formatMoneyCompactSigned(-day.payoutGross, currency)}
+                    </span>
+                    <span className="journal-day-amount is-tight">
+                      {day.count
+                        ? formatAmountCompactSigned(day.pnl)
+                        : formatAmountCompactSigned(-day.payoutGross)}
+                    </span>
+                  </strong>
+                  <small className="journal-day-meta">
+                    {day.count
+                      ? `${day.count} ${day.count === 1 ? t("journal.calendar.opsSuffixOne") : t("journal.calendar.opsSuffix")}`
+                      : ""}
+                    {day.count && day.payoutCount ? " · " : ""}
+                    {/* En un dia de solo payout el importe grande YA es el del retiro, asi
+                        que aqui basta "Payout" sin repetir la cifra (y asi cabe). Con
+                        operaciones ese dia, el importe grande es el P&L y el del payout
+                        va como extra. */}
+                    {day.payoutCount
+                      ? day.count
+                        ? `${t("journal.calendar.payoutPrefix")} ${formatMoneyCompactSigned(-day.payoutGross, currency)}`
+                        : t("journal.calendar.payoutPrefix")
+                      : ""}
+                  </small>
+                  {/* Tercera linea, como el calendario de referencia: winrate del dia
+                      (ganadoras / operaciones). Solo con operaciones — un dia de solo
+                      payout no tiene winrate que enseñar. */}
+                  {day.count ? <small className="journal-day-rate">{formatPercentCompact(day.wins / day.count)}</small> : null}
                 </span>
-                <span className="journal-day-amount is-tight">
-                  {day.count
-                    ? formatAmountCompactSigned(day.pnl)
-                    : day.payoutCount
-                      ? formatAmountCompactSigned(-day.payoutGross)
-                      : "-"}
-                </span>
-              </strong>
-              <small>
-                {day.count ? `${day.count} ${t("journal.calendar.opsSuffix")}` : ""}
-                {day.count && day.payoutCount ? " · " : ""}
-                {day.payoutCount ? `${t("journal.calendar.payoutPrefix")} ${formatMoneyCompactSigned(-day.payoutGross, currency)}` : ""}
-              </small>
+              ) : null}
             </button>
               ))}
               <div className={`journal-week-summary ${week.entries ? signedTone(week.pnl) : "is-empty"}`}>
                 <span>{t("journal.calendar.weekPrefix")}</span>
-                <strong>{week.entries ? formatMoney(week.pnl, currency) : formatMoney(0, currency)}</strong>
+                {/* Formato compacto como las celdas de dia: deja estrechar la columna de
+                    semana para dar ancho a los dias. El total exacto del mes sigue arriba. */}
+                <strong>{formatMoneyCompactSigned(week.entries ? week.pnl : 0, currency)}</strong>
                 {/* Mismo formato que el numerito de dias del P&L total: una pill en vez
                     de texto plano. En una columna de 85px "N dias operados" no cabia
                     inline junto al importe, asi que se queda en su propia fila, como
@@ -1933,6 +1949,9 @@ type CalendarDay = {
   payoutGross: number;
   payoutNet: number;
   pnl: number;
+  /* Operaciones ganadoras del dia (pnl > 0), misma definicion de "win" que el cockpit
+     (buildDashboardModel). La celda pinta wins / count como winrate, tercera linea. */
+  wins: number;
 };
 
 type Tone = "positive" | "negative" | "neutral";
@@ -3346,15 +3365,23 @@ function buildCalendarDays(month: string, entries: JournalEntry[], movements: Mo
   const safeMonth = normalizeMonth(month);
   const [year, monthNumber] = safeMonth.split("-").map(Number);
   const first = new Date(year, monthNumber - 1, 1);
+  const leadingDays = (first.getDay() + 6) % 7;
+  /* Solo las semanas que el mes toca de verdad (4, 5 o 6 segun donde caiga el dia 1).
+     Antes eran 42 celdas fijas = 6 semanas siempre, y meses como septiembre de 2026
+     arrastraban una fila entera del mes siguiente, vacia. Menos filas -> cada cuadrado
+     puede respirar mas. El PNG del calendario ya recortaba las semanas sobrantes
+     (trimTrailingEmptyWeeks); esto lo hace tambien en la vista. */
+  const daysInMonth = new Date(year, monthNumber, 0).getDate();
+  const weekCount = Math.ceil((leadingDays + daysInMonth) / 7);
   const start = new Date(first);
-  start.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+  start.setDate(first.getDate() - leadingDays);
   const grouped = new Map<
     string,
-    { count: number; firstEntryId?: string; payoutCount: number; payoutGross: number; payoutNet: number; pnl: number }
+    { count: number; firstEntryId?: string; payoutCount: number; payoutGross: number; payoutNet: number; pnl: number; wins: number }
   >();
 
   entries.forEach((entry) => {
-    const current = grouped.get(entry.date) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0 };
+    const current = grouped.get(entry.date) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0, wins: 0 };
     grouped.set(entry.date, {
       count: current.count + 1,
       firstEntryId: current.firstEntryId || entry.id,
@@ -3362,12 +3389,13 @@ function buildCalendarDays(month: string, entries: JournalEntry[], movements: Mo
       payoutGross: current.payoutGross,
       payoutNet: current.payoutNet,
       pnl: current.pnl + entry.pnl,
+      wins: current.wins + (entry.pnl > 0 ? 1 : 0),
     });
   });
 
   movements.forEach((movement) => {
     if (movement.category !== "payout" || !movement.accountId) return;
-    const current = grouped.get(movement.date) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0 };
+    const current = grouped.get(movement.date) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0, wins: 0 };
     grouped.set(movement.date, {
       ...current,
       payoutCount: current.payoutCount + 1,
@@ -3376,11 +3404,11 @@ function buildCalendarDays(month: string, entries: JournalEntry[], movements: Mo
     });
   });
 
-  return Array.from({ length: 42 }, (_, index) => {
+  return Array.from({ length: weekCount * 7 }, (_, index) => {
     const date = new Date(start);
     date.setDate(start.getDate() + index);
     const key = dateToIso(date);
-    const item = grouped.get(key) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0 };
+    const item = grouped.get(key) || { count: 0, payoutCount: 0, payoutGross: 0, payoutNet: 0, pnl: 0, wins: 0 };
     return {
       count: item.count,
       date: key,
@@ -3390,6 +3418,7 @@ function buildCalendarDays(month: string, entries: JournalEntry[], movements: Mo
       payoutGross: item.payoutGross,
       payoutNet: item.payoutNet,
       pnl: item.pnl,
+      wins: item.wins,
     };
   });
 }
