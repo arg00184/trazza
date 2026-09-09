@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 
 /**
  * Dos paginas, un solo build. La landing publica (index.html) y la app React
@@ -20,8 +20,36 @@ import { defineConfig } from "vite";
  * solo para que tsconfig.node.json deje pasar este fichero. Vite resuelve las rutas
  * relativas contra `root`, que es exactamente lo que hace falta.
  */
+
+/**
+ * En produccion, vercel.json reescribe "/app" (sin barra) a "/app/index.html". El dev
+ * server de Vite no hace esa reescritura y sirve la landing en su lugar, asi que los
+ * enlaces de la landing (href="/app", "/app?mode=signup") no llevaban a la app en local:
+ * pulsar "Entrar" recargaba la propia landing. Esto replica la reescritura de Vercel solo
+ * para desarrollo. Es una reescritura interna, no un redirect: la barra de direcciones
+ * sigue mostrando "/app" igual que en produccion, y no toca el build.
+ */
+function appIndexRewrite(): Plugin {
+  return {
+    name: "trazza-app-index-rewrite",
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        /* `req` es Connect.IncomingMessage; este paquete no instala @types/node a
+           proposito (ver el comentario de arriba), asi que TS no ve `.url` y se accede
+           con un cast a la forma minima que se usa aqui. */
+        const withUrl = req as { url?: string };
+        const { url } = withUrl;
+        if (url === "/app" || (url !== undefined && url.startsWith("/app?"))) {
+          withUrl.url = `/app/${url.slice("/app".length)}`;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), appIndexRewrite()],
   build: {
     rollupOptions: {
       input: {
