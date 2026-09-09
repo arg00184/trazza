@@ -4854,11 +4854,12 @@ button {
      estados verde/rojo/payout de mas abajo. */
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  /* Padding minimo: el calendario va a span 8 (comparte fila con Ultimas operaciones), asi
-     que a 1440px cada celda de dia mide ~79px y cada pixel de relleno se lo quita al
-     importe centrado. 4px de lado dejan ~71px utiles, que es lo que hace entrar
-     "+€2,4K" a --text-lg. */
-  padding: var(--space-2xs);
+  /* Relleno lateral minimo (4px): cada pixel se lo quita al importe, y a 1440px la celda
+     ya es estrecha. Arriba en cambio va un colchon (--space-lg): el numero del dia esta
+     posicionado en la esquina superior y sin ese aire el bloque centrado le quedaba
+     pegado, sobre todo con la insignia de "hoy", que es mas alta que un numero suelto.
+     El movil lo resetea a su propio valor en el @media de 820. */
+  padding: var(--space-lg) var(--space-2xs) var(--space-2xs);
   /* Gris plano que se hunde contra el panel (--surface): un dia vacio no compite. Antes
      era #fbfcfd (casi blanco) con un hairline, y 20+ celdas asi hacian una rejilla
      ocupada al lado de los 6 dias que importan. En oscuro lo pisa :root[data-theme=dark]
